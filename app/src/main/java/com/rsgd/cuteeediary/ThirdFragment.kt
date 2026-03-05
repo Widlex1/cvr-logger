@@ -3,7 +3,6 @@ package com.rsgd.cuteeediary
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
@@ -27,11 +26,6 @@ import androidx.navigation.fragment.findNavController
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.MultiFormatWriter
-import com.journeyapps.barcodescanner.BarcodeEncoder
-import com.journeyapps.barcodescanner.ScanContract
-import com.journeyapps.barcodescanner.ScanOptions
 import com.rsgd.cuteeediary.databinding.FragmentThirdBinding
 import com.rsgd.cuteeediary.databinding.DialogAddPersonBinding
 import kotlinx.coroutines.launch
@@ -58,13 +52,6 @@ class ThirdFragment : Fragment() {
     private val db = FirebaseFirestore.getInstance()
     private var firestoreListener: ListenerRegistration? = null
     private var isUpdatingFromFirestore = false
-
-    // Scanner for Joining Sessions
-    private val joinSessionLauncher = registerForActivityResult(ScanContract()) { result ->
-        if (result.contents != null) {
-            joinSharedSession(result.contents)
-        }
-    }
 
     private val geminiPerson = Person("Gemma", "#00FFFF".toColorInt(), isMaster = false, isAI = true)
 
@@ -114,11 +101,7 @@ class ThirdFragment : Fragment() {
         }
 
         binding.tvEditorTitle.setOnClickListener {
-            showSessionMenu()
-        }
-
-        binding.btnShareSession.setOnClickListener {
-            showSessionQr()
+            showRenameDialog()
         }
 
         setupSenderSwipe()
@@ -161,7 +144,6 @@ class ThirdFragment : Fragment() {
     private fun startFirestoreSync() {
         firestoreListener?.remove()
         val docId = currentFileName?.replace(".", "_") ?: return
-        // Updated to use "logs" collection to match Firestore console
         firestoreListener = db.collection("logs").document(docId)
             .addSnapshotListener { snapshot, e ->
                 if (e != null) {
@@ -217,51 +199,6 @@ class ThirdFragment : Fragment() {
         
         updateSenderUI()
         isUpdatingFromFirestore = false
-    }
-
-    private fun showSessionQr() {
-        val docId = currentFileName?.replace(".", "_") ?: return
-        try {
-            val bitMatrix = MultiFormatWriter().encode(docId, BarcodeFormat.QR_CODE, 600, 600)
-            val bitmap = BarcodeEncoder().createBitmap(bitMatrix)
-            
-            val imageView = ImageView(requireContext()).apply {
-                setImageBitmap(bitmap)
-                setPadding(40, 40, 40, 40)
-                setBackgroundColor(Color.WHITE)
-            }
-            
-            AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_Alert)
-                .setTitle("SYNC LOG DATA")
-                .setMessage("Let others scan this to join the grouped log.")
-                .setView(imageView)
-                .setPositiveButton("CLOSE", null)
-                .show()
-        } catch (e: Exception) {
-            Toast.makeText(requireContext(), "QR Generation Failed", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun showSessionMenu() {
-        val items = arrayOf("Rename Session", "Sync/Join Group Session")
-        AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_Alert)
-            .setTitle("SESSION OPS")
-            .setItems(items) { _, which ->
-                if (which == 0) showRenameDialog()
-                else joinSessionLauncher.launch(ScanOptions().setPrompt("Scan a Group's QR to Join"))
-            }
-            .show()
-    }
-
-    private fun joinSharedSession(docId: String) {
-        // Convert docId back to fileName format
-        val newFileName = docId.replace("_", ".")
-        currentFileName = newFileName
-        binding.tvEditorTitle.text = currentFileName
-        
-        // Start sync immediately
-        startFirestoreSync()
-        Toast.makeText(requireContext(), "Joined Grouped Log", Toast.LENGTH_SHORT).show()
     }
 
     private fun prefixInput(prefix: String) {
@@ -642,7 +579,6 @@ class ThirdFragment : Fragment() {
         File(requireContext().filesDir, currentFileName!!).writeText(messageLines.joinToString("\n"))
         
         val docId = currentFileName?.replace(".", "_") ?: return
-        // Updated to use "logs" collection to match Firestore console
         db.collection("logs").document(docId).set(mapOf(
             "messages" to messageLines,
             "people" to peopleLines

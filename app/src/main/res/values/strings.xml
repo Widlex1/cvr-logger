@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Cuteee Diary</string>
+    <string name="app_name">CVR Logger</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
@@ -42,5 +42,31 @@
         sodales. Praesent bibendum rhoncus tellus nec feugiat. In a ornare nulla. Donec rhoncus
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
+    </string>
+
+    <!-- Easter Egg Dialog Strings -->
+    <string name="easter_egg_title">SYSTEM MANUAL // CORE_LOG</string>
+    <string name="easter_egg_dismiss">DISMISS</string>
+    <string name="easter_egg_footer">[ IN MEMORY OF CVR ]</string>
+    <string name="easter_egg_manual_content">
+        >>> APPLICATION CAPABILITIES:\n\n
+        1. MULTI-ENTITY LOGGING:\n
+        Create entries under different \'Entities\'. Simulate conversations or categorize thoughts from different perspectives.\n\n
+        2. STORY MODE:\n
+        Toggle \'Story Mode\' (>) to format entries as narrative beats. Perfect for world-building or descriptive journal entries.\n\n
+        3. CLOUD SYNC (FIRESTORE):\n
+        Logs are synced to the cloud. Access your sessions from any device or collaborate in real-time by sharing the log name.\n\n
+        4. GEMMA AI INTEGRATION:\n
+        Summon \'Gemma\' using @Gemma or the \'Wake\' button. AI analyzes context to provide helpful or witty responses.\n\n
+        5. DYNAMIC CUSTOMIZATION:\n
+        Change \'Accent Color\' in settings to shift the UI\'s cyberpunk aesthetic. Entities also have signature colors.\n\n
+        6. EXTERNAL FILE HANDLING:\n
+        Import and export .log files. Open .log files directly from device storage into the app terminal.\n\n
+        >>> POTENTIAL USES:\n\n
+        - Cyberpunk Roleplay Terminal\n
+        - Secure Personal Narrative Diary\n
+        - Collaborative Storytelling\n
+        - AI-Assisted World Building\n
+        - Technical \'Mood\' Logger
     </string>
 </resources>

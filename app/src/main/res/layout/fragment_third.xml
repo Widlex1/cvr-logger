@@ -46,20 +46,9 @@
                 android:textSize="12sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/btn_share_session"
+                app:layout_constraintEnd_toStartOf="@id/tv_status"
                 app:layout_constraintStart_toEndOf="@id/btn_close"
                 app:layout_constraintTop_toTopOf="parent" />
-
-            <ImageView
-                android:id="@+id/btn_share_session"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginEnd="12dp"
-                android:src="@android:drawable/ic_menu_share"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/tv_status"
-                app:layout_constraintTop_toTopOf="parent"
-                app:tint="@color/accent_pink" />
 
             <TextView
                 android:id="@+id/tv_status"

@@ -1,93 +1,128 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#121212"
-    android:padding="32dp">
+    app:cardBackgroundColor="#121212"
+    app:cardCornerRadius="28dp"
+    app:cardElevation="8dp"
+    app:strokeWidth="2dp"
+    app:strokeColor="#FF2D7D"
+    android:layout_margin="16dp">
 
-    <View
-        android:id="@+id/glitch_line_top"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:background="#FF2D7D"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/img_easter_egg"
-        android:layout_width="110dp"
-        android:layout_height="85dp"
-        android:layout_marginTop="16dp"
-        android:src="@drawable/ic_launcher_foreground"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/glitch_line_top" />
-
-    <TextView
-        android:id="@+id/tv_secret_code"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:fontFamily="monospace"
-        android:text="ENCRYPTED_MESSAGE_FOUND"
-        android:textColor="#666666"
-        android:textSize="10sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/img_easter_egg" />
+        android:padding="24dp">
 
-    <TextView
-        android:id="@+id/tv_easter_egg_msg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:fontFamily="monospace"
-        android:gravity="center"
-        android:text="In the memory of CVR."
-        android:textColor="#FF2D7D"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_secret_code" />
+        <!-- Animated Background scanline -->
+        <View
+            android:id="@+id/view_scanline"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:alpha="0.1"
+            android:background="@android:color/white"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/tv_footer_secret"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:fontFamily="monospace"
-        android:text="[ ACCESS GRANTED ]"
-        android:textColor="#00FFFF"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_easter_egg_msg" />
+        <View
+            android:id="@+id/glitch_line_top"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="#FF2D7D"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <View
-        android:id="@+id/glitch_line_bottom"
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:layout_marginTop="32dp"
-        android:background="#FF2D7D"
-        app:layout_constraintTop_toBottomOf="@id/tv_footer_secret" />
+        <TextView
+            android:id="@+id/tv_easter_egg_msg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="monospace"
+            android:gravity="center"
+            android:text="SYSTEM MANUAL // CORE_LOG"
+            android:textColor="#FF2D7D"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/glitch_line_top" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_close_secret"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="DISMISS"
-        android:textColor="#FF2D7D"
-        android:fontFamily="monospace"
-        app:backgroundTint="#1A1A1A"
-        app:cornerRadius="4dp"
-        app:strokeColor="#FF2D7D"
-        app:strokeWidth="1dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/glitch_line_bottom" />
+        <ScrollView
+            android:id="@+id/scroll_manual"
+            android:layout_width="match_parent"
+            android:layout_height="380dp"
+            android:layout_marginTop="16dp"
+            android:padding="16dp"
+            android:background="#0A0A0A"
+            app:layout_constraintTop_toBottomOf="@id/tv_easter_egg_msg">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <TextView
+                android:id="@+id/tv_manual_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:lineSpacingExtra="8dp"
+                android:text=">>> APPLICATION CAPABILITIES:\n\n
+1. MULTI-ENTITY LOGGING:\n
+   Create entries under different 'Entities'. Simulate conversations or categorize thoughts from different perspectives.\n\n
+2. STORY MODE:\n
+   Toggle 'Story Mode' (>) to format entries as narrative beats. Perfect for world-building or descriptive journal entries.\n\n
+3. CLOUD SYNC (FIRESTORE):\n
+   Logs are synced to the cloud. Access your sessions from any device or collaborate in real-time by sharing the log name.\n\n
+4. GEMMA AI INTEGRATION:\n
+   Summon 'Gemma' using @Gemma or the 'Wake' button. AI analyzes context to provide helpful or witty responses.\n\n
+5. DYNAMIC CUSTOMIZATION:\n
+   Change 'Accent Color' in settings to shift the UI's cyberpunk aesthetic. Entities also have signature colors.\n\n
+6. EXTERNAL FILE HANDLING:\n
+   Import and export .log files. Open .log files directly from device storage into the app terminal.\n\n
+>>> POTENTIAL USES:\n\n
+- Cyberpunk Roleplay Terminal\n
+- Secure Personal Narrative Diary\n
+- Collaborative Storytelling\n
+- AI-Assisted World Building\n
+- Technical 'Mood' Logger"
+                android:textColor="#EEEEEE"
+                android:textSize="12sp" />
+        </ScrollView>
+
+        <TextView
+            android:id="@+id/tv_footer_secret"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="monospace"
+            android:text="[ IN MEMORY OF CVR ]"
+            android:textColor="#00FFFF"
+            android:textSize="11sp"
+            android:alpha="0.8"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/scroll_manual" />
+
+        <View
+            android:id="@+id/glitch_line_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_marginTop="16dp"
+            android:background="#FF2D7D"
+            app:layout_constraintTop_toBottomOf="@id/tv_footer_secret" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_close_secret"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="DISMISS"
+            android:textColor="#FF2D7D"
+            android:fontFamily="monospace"
+            android:paddingHorizontal="32dp"
+            app:backgroundTint="#1A1A1A"
+            app:cornerRadius="12dp"
+            app:strokeColor="#FF2D7D"
+            app:strokeWidth="1dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/glitch_line_bottom" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

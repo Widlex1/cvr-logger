@@ -33,9 +33,36 @@ class FirstFragment : Fragment() {
     }
 
     private fun startBootAnimation() {
+        // Terminal text typing effect - Downward Direction (Appending lines)
+        val bootSequence = listOf(
+            ">>> INITIALIZING KERNEL...",
+            ">>> LOADING NEURAL MODULES...",
+            ">>> DECRYPTING FILE SYSTEM...",
+            ">>> ESTABLISHING FIRESTORE LINK...",
+            ">>> WAKING GEMMA...",
+            ">>> SYSTEM READY."
+        )
+        
+        var seqIndex = 0
+        val fullText = StringBuilder()
+        
+        val sequenceRunnable = object : Runnable {
+            override fun run() {
+                if (seqIndex < bootSequence.size) {
+                    if (fullText.isNotEmpty()) fullText.append("\n")
+                    fullText.append(bootSequence[seqIndex])
+                    binding.tvTerminal.text = fullText.toString()
+                    seqIndex++
+                    handler.postDelayed(this, 350)
+                }
+            }
+        }
+        handler.post(sequenceRunnable)
+
+        // Progress bar animation
         val progressBar = binding.progressLoading
         val progressAnimator = ObjectAnimator.ofInt(progressBar, "progress", 0, 100).apply {
-            duration = 1800 
+            duration = 2400 
             interpolator = DecelerateInterpolator()
         }
 
@@ -52,7 +79,7 @@ class FirstFragment : Fragment() {
             if (isAdded) {
                 findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
             }
-        }, 2100)
+        }, 3000)
     }
 
     override fun onDestroyView() {

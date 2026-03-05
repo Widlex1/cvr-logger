@@ -6,15 +6,15 @@ plugins {
 }
 
 android {
-    namespace = "com.rsgd.cuteeediary"
+    namespace = "com.rsgd.cvrlogger"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.rsgd.cuteeediary"
+        applicationId = "com.rsgd.cvrlogger"
         minSdk = 24
         targetSdk = 36
-        versionCode = 3      // Incremented for v2.0
-        versionName = "2.0"  // The Big 2.0 Milestone
+        versionCode = 4      // Incrementing for v3.0
+        versionName = "3.0"  // CVR Logger Milestone
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

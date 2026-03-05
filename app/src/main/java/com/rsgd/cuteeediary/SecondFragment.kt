@@ -1,5 +1,7 @@
 package com.rsgd.cuteeediary
 
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
@@ -12,12 +14,15 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.LinearInterpolator
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.card.MaterialCardView
 import com.rsgd.cuteeediary.databinding.FragmentSecondBinding
 import java.io.File
 import java.io.FileOutputStream
@@ -71,7 +76,6 @@ class SecondFragment : Fragment() {
         }
 
         binding.btnSettings.setOnClickListener {
-            // v2.0 Fix: Navigate to the full-screen fragment instead of a popup
             findNavController().navigate(R.id.action_SecondFragment_to_SettingsFragment)
         }
 
@@ -103,21 +107,38 @@ class SecondFragment : Fragment() {
         val prefs = requireContext().getSharedPreferences("CuteeeDiaryPrefs", Context.MODE_PRIVATE)
         val accentColor = Color.parseColor(prefs.getString("accent_color", "#FF2D7D"))
 
-        // Apply theme to the custom easter egg layout
-        val title = dialogView.findViewById<View>(R.id.tv_easter_egg_msg) as android.widget.TextView
+        val cardRoot = dialogView as? MaterialCardView
+        val title = dialogView.findViewById<TextView>(R.id.tv_easter_egg_msg)
         val closeBtn = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_close_secret)
         val lineTop = dialogView.findViewById<View>(R.id.glitch_line_top)
         val lineBottom = dialogView.findViewById<View>(R.id.glitch_line_bottom)
+        val scanline = dialogView.findViewById<View>(R.id.view_scanline)
 
-        title.setTextColor(accentColor)
-        closeBtn.setStrokeColor(android.content.res.ColorStateList.valueOf(accentColor))
-        closeBtn.setTextColor(accentColor)
-        lineTop.setBackgroundColor(accentColor)
-        lineBottom.setBackgroundColor(accentColor)
+        // Theme application
+        cardRoot?.strokeColor = accentColor
+        title?.setTextColor(accentColor)
+        closeBtn?.setStrokeColor(android.content.res.ColorStateList.valueOf(accentColor))
+        closeBtn?.setTextColor(accentColor)
+        lineTop?.setBackgroundColor(accentColor)
+        lineBottom?.setBackgroundColor(accentColor)
+        scanline?.setBackgroundColor(accentColor)
 
         val dialog = AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_Alert)
             .setView(dialogView)
             .create()
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        // Scanline Animation
+        scanline?.post {
+            val parentHeight = (scanline.parent as View).height.toFloat()
+            ObjectAnimator.ofFloat(scanline, "translationY", -20f, parentHeight).apply {
+                duration = 3000
+                repeatCount = ValueAnimator.INFINITE
+                interpolator = LinearInterpolator()
+                start()
+            }
+        }
 
         closeBtn.setOnClickListener {
             dialog.dismiss()

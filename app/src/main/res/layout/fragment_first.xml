@@ -8,36 +8,25 @@
     android:fitsSystemWindows="true"
     tools:context=".FirstFragment">
 
-    <!-- App Logo Area -->
-    <ImageView
-        android:id="@+id/img_logo"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_marginTop="60dp"
-        android:src="@drawable/logo"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <TextView
         android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="CUTEee DIARY"
-        android:textColor="@color/accent_pink"
-        android:textSize="24sp"
-        android:textStyle="bold"
+        android:layout_marginTop="100dp"
+        android:fontFamily="@font/cairo_play_extralight"
         android:letterSpacing="0.1"
-        android:fontFamily="monospace"
+        android:text="CVR LOGGER"
+        android:textColor="@color/accent_pink"
+        android:textSize="28sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/img_logo" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Side Motion Graphics (Lines) -->
     <View
         android:id="@+id/line_left_1"
-        android:layout_width="20dp"
+        android:layout_width="0dp"
         android:layout_height="1dp"
         android:background="@color/accent_pink"
         android:alpha="0.5"
@@ -49,7 +38,7 @@
 
     <View
         android:id="@+id/line_right_1"
-        android:layout_width="20dp"
+        android:layout_width="0dp"
         android:layout_height="1dp"
         android:background="@color/accent_pink"
         android:alpha="0.5"
@@ -64,14 +53,14 @@
         android:id="@+id/tv_terminal"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="60dp"
+        android:layout_marginStart="40dp"
         android:layout_marginTop="40dp"
-        android:layout_marginEnd="60dp"
+        android:layout_marginEnd="40dp"
         android:fontFamily="monospace"
         android:lineSpacingExtra="6dp"
-        android:text=">>> SYSTEM BOOTING..."
+        android:text=""
         android:textColor="@color/accent_pink"
-        android:textSize="10sp"
+        android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_title" />
@@ -185,7 +174,7 @@
             android:id="@+id/tv_version_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="VERSION 2.0 - BETA // BUILD 0003"
+            android:text="VERSION 3.0 - STABLE // BUILD 0001"
             android:textColor="@color/footer_gray"
             android:alpha="0.7"
             android:textSize="8sp"
