@@ -138,9 +138,9 @@
             android:orientation="horizontal"
             app:layout_constraintBottom_toTopOf="@id/input_area">
 
-            <!-- Gemma Wake Up Box -->
+            <!-- Playground Button -->
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/gemma_area"
+                android:id="@+id/playground_area"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_marginEnd="4dp"
@@ -148,12 +148,12 @@
                 android:padding="8dp">
 
                 <TextView
-                    android:id="@+id/btn_wake_gemma"
+                    android:id="@+id/btn_playground"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="monospace"
                     android:padding="8dp"
-                    android:text="WAKE GEMMA"
+                    android:text="PLAYGROUND"
                     android:textColor="@color/accent_cyan"
                     android:textSize="12sp"
                     app:layout_constraintBottom_toBottomOf="parent"

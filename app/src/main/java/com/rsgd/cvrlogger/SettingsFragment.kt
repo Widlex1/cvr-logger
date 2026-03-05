@@ -44,21 +44,16 @@ class SettingsFragment : Fragment() {
     private fun loadSettings() {
         val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
         
-        val isAiEnabled = prefs.getBoolean("ai_enabled", true)
-        val customPrompt = prefs.getString("ai_prompt", "You are Gemma, a human-like AI in a cyberpunk diary. Respond briefly and as naturally as possible to the conversation.")
         val defaultUser = prefs.getString("default_user", "System")
         val uiScale = prefs.getFloat("ui_scale", 1.0f)
         tempSelectedColor = prefs.getString("accent_color", "#FF2D7D") ?: "#FF2D7D"
         val enterIsSend = prefs.getBoolean("enter_is_send", true)
 
-        binding.switchAi.isChecked = isAiEnabled
         binding.switchEnterSend.isChecked = enterIsSend
-        binding.etAiPrompt.setText(customPrompt)
         binding.etDefaultUser.setText(defaultUser)
         binding.sliderUiScale.value = uiScale
 
         setupEnterIsSend(binding.etDefaultUser)
-        setupEnterIsSend(binding.etAiPrompt)
 
         applyTheme(tempSelectedColor)
         setupColorPicker()
@@ -119,14 +114,8 @@ class SettingsFragment : Fragment() {
         binding.secUser.setTextColor(accentColor)
         binding.secUi.setTextColor(accentColor)
         binding.secEditing.setTextColor(accentColor)
-        binding.secAi.setTextColor(accentColor)
 
         binding.etDefaultUser.background = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            setStroke(2, accentColor)
-            cornerRadius = 12f
-        }
-        binding.etAiPrompt.background = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             setStroke(2, accentColor)
             cornerRadius = 12f
@@ -134,9 +123,6 @@ class SettingsFragment : Fragment() {
         
         binding.sliderUiScale.thumbTintList = colorStateList
         binding.sliderUiScale.trackActiveTintList = colorStateList
-        
-        binding.switchAi.thumbTintList = colorStateList
-        binding.switchAi.trackTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#333333"))
         
         binding.switchEnterSend.thumbTintList = colorStateList
         binding.switchEnterSend.trackTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#333333"))
@@ -155,9 +141,7 @@ class SettingsFragment : Fragment() {
         val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
         
         prefs.edit()
-            .putBoolean("ai_enabled", binding.switchAi.isChecked)
             .putBoolean("enter_is_send", binding.switchEnterSend.isChecked)
-            .putString("ai_prompt", binding.etAiPrompt.text.toString())
             .putString("default_user", binding.etDefaultUser.text.toString())
             .putFloat("ui_scale", binding.sliderUiScale.value)
             .putString("accent_color", tempSelectedColor)
