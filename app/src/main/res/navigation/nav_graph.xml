@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/FirstFragment"
-        android:name="com.rsgd.cuteeediary.FirstFragment"
+        android:name="com.rsgd.cvrlogger.FirstFragment"
         android:label="Loading"
         tools:layout="@layout/fragment_first">
         <action
@@ -19,7 +19,7 @@
 
     <fragment
         android:id="@+id/SecondFragment"
-        android:name="com.rsgd.cuteeediary.SecondFragment"
+        android:name="com.rsgd.cvrlogger.SecondFragment"
         android:label="Logs"
         tools:layout="@layout/fragment_second">
         <action
@@ -45,7 +45,7 @@
 
     <fragment
         android:id="@+id/FourthFragment"
-        android:name="com.rsgd.cuteeediary.FourthFragment"
+        android:name="com.rsgd.cvrlogger.FourthFragment"
         android:label="Read"
         tools:layout="@layout/fragment_fourth">
         <argument
@@ -60,13 +60,13 @@
 
     <fragment
         android:id="@+id/ThirdFragment"
-        android:name="com.rsgd.cuteeediary.ThirdFragment"
+        android:name="com.rsgd.cvrlogger.ThirdFragment"
         android:label="Editor"
         tools:layout="@layout/fragment_third" />
 
     <fragment
         android:id="@+id/SettingsFragment"
-        android:name="com.rsgd.cuteeediary.SettingsFragment"
+        android:name="com.rsgd.cvrlogger.SettingsFragment"
         android:label="Settings"
         tools:layout="@layout/fragment_settings" />
 </navigation>

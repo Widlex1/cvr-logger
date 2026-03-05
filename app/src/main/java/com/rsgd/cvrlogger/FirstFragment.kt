@@ -33,11 +33,12 @@ class FirstFragment : Fragment() {
     }
 
     private fun startBootAnimation() {
+        // Terminal text typing effect - Downward Direction (Appending lines)
         val bootSequence = listOf(
             ">>> INITIALIZING KERNEL...",
             ">>> LOADING NEURAL MODULES...",
             ">>> DECRYPTING FILE SYSTEM...",
-            ">>> LOCAL STORAGE READY...",
+            ">>> ESTABLISHING FIRESTORE LINK...",
             ">>> WAKING GEMMA...",
             ">>> SYSTEM READY."
         )
@@ -58,6 +59,7 @@ class FirstFragment : Fragment() {
         }
         handler.post(sequenceRunnable)
 
+        // Progress bar animation
         val progressBar = binding.progressLoading
         val progressAnimator = ObjectAnimator.ofInt(progressBar, "progress", 0, 100).apply {
             duration = 2400 
@@ -72,6 +74,7 @@ class FirstFragment : Fragment() {
 
         progressAnimator.start()
 
+        // Automatically navigate to the Second screen (Log List) after boot
         handler.postDelayed({
             if (isAdded) {
                 findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)

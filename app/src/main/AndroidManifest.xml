@@ -12,11 +12,11 @@
         android:label="@string/app_name"
         android:roundIcon="@drawable/logo"
         android:supportsRtl="true"
-        android:theme="@style/Theme.CuteeeDiary">
+        android:theme="@style/Theme.CVRLogger">
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.CuteeeDiary">
+            android:theme="@style/Theme.CVRLogger">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

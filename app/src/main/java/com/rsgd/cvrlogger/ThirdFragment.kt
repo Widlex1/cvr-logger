@@ -4,8 +4,15 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.CharacterStyle
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
+import android.text.style.UnderlineSpan
 import android.view.GestureDetector
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -23,16 +30,32 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.ai.client.generativeai.GenerativeModel
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.rsgd.cvrlogger.databinding.FragmentThirdBinding
 import com.rsgd.cvrlogger.databinding.DialogAddPersonBinding
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.Random
 
 data class Person(var name: String, var color: Int, var isMaster: Boolean = false, var isAI: Boolean = false)
 data class MessageInfo(val person: Person, var isStory: Boolean, var originalText: String)
+
+class SparkleSpan(private val color: Int) : CharacterStyle() {
+    private val random = Random()
+    override fun updateDrawState(tp: android.text.TextPaint) {
+        if (random.nextBoolean()) {
+            tp.color = color
+            tp.isFakeBoldText = true
+        } else {
+            tp.color = Color.WHITE
+        }
+    }
+}
 
 class ThirdFragment : Fragment() {
 
@@ -46,10 +69,14 @@ class ThirdFragment : Fragment() {
     private var editingMessageView: TextView? = null
     private var isStoryMode: Boolean = false
 
+    private val db = FirebaseFirestore.getInstance()
+    private var firestoreListener: ListenerRegistration? = null
+    private var isUpdatingFromFirestore = false
+
     private val geminiPerson = Person("Gemma", "#00FFFF".toColorInt(), isMaster = false, isAI = true)
 
     private val generativeModel = GenerativeModel(
-        modelName = "gemma-3-27b-it",
+        modelName = "gemini-1.5-flash",
         apiKey = "AIzaSyAxW5ENMcCXBAEZlpsDdTL6wHOpA9ZBGsY"
     )
     
@@ -86,6 +113,7 @@ class ThirdFragment : Fragment() {
             people.add(Person(defaultName, "#FF2D7D".toColorInt(), isMaster = true))
         }
 
+        startFirestoreSync()
         updateSenderUI()
 
         binding.btnClose.setOnClickListener {
@@ -116,7 +144,9 @@ class ThirdFragment : Fragment() {
             applyTheme()
         }
         
-        binding.btnFormatComment.setOnClickListener { prefixInput("// ") }
+        binding.btnFormatComment.setOnClickListener {
+            showFormattingDialog()
+        }
 
         val isEnterSendEnabled = prefs.getBoolean("enter_is_send", true)
         if (isEnterSendEnabled) {
@@ -131,6 +161,99 @@ class ThirdFragment : Fragment() {
         binding.btnSend.setOnClickListener {
             sendMessage()
         }
+    }
+
+    private fun showFormattingDialog() {
+        val formats = arrayOf("Bold (*text*)", "Italic (_text_)", "Underline (~text~)", "Sparkle (\$text\$)")
+        AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_Alert)
+            .setTitle("CHOOSE FORMAT")
+            .setItems(formats) { _, which ->
+                val wrap = when(which) {
+                    0 -> arrayOf("*", "*")
+                    1 -> arrayOf("_", "_")
+                    2 -> arrayOf("~", "~")
+                    3 -> arrayOf("\$", "\$")
+                    else -> arrayOf("", "")
+                }
+                wrapSelection(wrap[0], wrap[1])
+            }
+            .show()
+    }
+
+    private fun wrapSelection(prefix: String, suffix: String) {
+        val start = binding.etMessageInput.selectionStart
+        val end = binding.etMessageInput.selectionEnd
+        val text = binding.etMessageInput.text.toString()
+        
+        if (start != end) {
+            val selected = text.substring(start, end)
+            val newText = text.substring(0, start) + prefix + selected + suffix + text.substring(end)
+            binding.etMessageInput.setText(newText)
+            binding.etMessageInput.setSelection(start + prefix.length, end + prefix.length)
+        } else {
+            binding.etMessageInput.text.insert(start, prefix + suffix)
+            binding.etMessageInput.setSelection(start + prefix.length)
+        }
+    }
+
+    private fun startFirestoreSync() {
+        firestoreListener?.remove()
+        val docId = currentFileName?.replace(".", "_") ?: return
+        firestoreListener = db.collection("logs").document(docId)
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    android.util.Log.e("FirestoreSync", "Listen failed: $e")
+                    return@addSnapshotListener
+                }
+                if (snapshot != null && snapshot.exists() && !isUpdatingFromFirestore) {
+                    val messagesData = snapshot.get("messages") as? List<String> ?: emptyList()
+                    val peopleData = snapshot.get("people") as? List<String> ?: emptyList()
+                    updateSyncData(messagesData, peopleData)
+                }
+            }
+    }
+
+    private fun updateSyncData(messagesData: List<String>, peopleData: List<String>) {
+        isUpdatingFromFirestore = true
+        
+        // Update People
+        if (peopleData.isNotEmpty()) {
+            val loadedPeople = mutableListOf<Person>()
+            peopleData.forEach { line ->
+                val p = line.split("|")
+                if (p.size >= 3) {
+                    loadedPeople.add(Person(p[1], p[0].toInt(), p[2].toBoolean()))
+                }
+            }
+            people = loadedPeople.filter { !it.isAI }.toMutableList()
+            if (people.isEmpty()) {
+                val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
+                val defaultName = prefs.getString("default_user", "System") ?: "System"
+                people.add(Person(defaultName, "#FF2D7D".toColorInt(), isMaster = true))
+            }
+        }
+
+        // Update Messages
+        binding.layoutMessages.removeAllViews()
+        lineCount = 1
+        messagesData.forEach { line ->
+            val parts = line.split("|", limit = 6)
+            if (parts.size >= 5) {
+                val color = parts[0].toIntOrNull() ?: Color.WHITE
+                val name = parts[1]
+                val isMaster = parts[2].toBoolean()
+                val isAI = parts[3].toBoolean()
+                val isStoryMessage = parts[4].toBoolean()
+                val textContent = parts.last()
+                
+                val p = Person(name, color, isMaster, isAI)
+                val messageInfo = MessageInfo(p, isStoryMessage, textContent)
+                addMessageToTerminal(messageInfo, isInitialLoad = true)
+            }
+        }
+        
+        updateSenderUI()
+        isUpdatingFromFirestore = false
     }
 
     private fun prefixInput(prefix: String) {
@@ -163,7 +286,7 @@ class ThirdFragment : Fragment() {
 
                 val prefix = if (updatedMessageInfo.person.isMaster) "★ " else ""
                 val displayText = if (updatedMessageInfo.isStory) "> ${updatedMessageInfo.originalText}" else "[$prefix${updatedMessageInfo.person.name.uppercase()}] ${updatedMessageInfo.originalText}"
-                editingMessageView?.text = displayText
+                editingMessageView?.text = formatTerminalText(displayText, updatedMessageInfo.person.color)
                 editingMessageView?.tag = updatedMessageInfo
                 editingMessageView = null
                 binding.btnSend.text = "SEND >"
@@ -176,6 +299,56 @@ class ThirdFragment : Fragment() {
             binding.etMessageInput.text.clear()
             binding.tvGuideTerminal.visibility = View.GONE
         }
+    }
+
+    private fun formatTerminalText(text: String, color: Int): Spannable {
+        val ssb = SpannableStringBuilder(text)
+        
+        // Bold: *text*
+        var match = Regex("\\*(.*?)\\*").find(ssb)
+        while (match != null) {
+            val start = match.range.first
+            val end = match.range.last + 1
+            ssb.setSpan(StyleSpan(Typeface.BOLD), start + 1, end - 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            ssb.delete(end - 1, end)
+            ssb.delete(start, start + 1)
+            match = Regex("\\*(.*?)\\*").find(ssb)
+        }
+
+        // Italic: _text_
+        match = Regex("_(.*?)_").find(ssb)
+        while (match != null) {
+            val start = match.range.first
+            val end = match.range.last + 1
+            ssb.setSpan(StyleSpan(Typeface.ITALIC), start + 1, end - 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            ssb.delete(end - 1, end)
+            ssb.delete(start, start + 1)
+            match = Regex("_(.*?)_").find(ssb)
+        }
+
+        // Underline: ~text~
+        match = Regex("~(.*?)~").find(ssb)
+        while (match != null) {
+            val start = match.range.first
+            val end = match.range.last + 1
+            ssb.setSpan(UnderlineSpan(), start + 1, end - 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            ssb.delete(end - 1, end)
+            ssb.delete(start, start + 1)
+            match = Regex("~(.*?)~").find(ssb)
+        }
+
+        // Sparkle: $text$
+        match = Regex("\\$(.*?)\\$").find(ssb)
+        while (match != null) {
+            val start = match.range.first
+            val end = match.range.last + 1
+            ssb.setSpan(SparkleSpan(color), start + 1, end - 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            ssb.delete(end - 1, end)
+            ssb.delete(start, start + 1)
+            match = Regex("\\$(.*?)\\$").find(ssb)
+        }
+
+        return ssb
     }
 
     private fun applyTheme() {
@@ -264,7 +437,8 @@ class ThirdFragment : Fragment() {
                 addMessageToTerminal(aiMessageInfo)
                 saveContent()
             } catch (e: Exception) {
-                addMessageToTerminal(MessageInfo(geminiPerson, false, "ERROR: Connectivity lost."))
+                android.util.Log.e("GeminiError", "Error generating content", e)
+                addMessageToTerminal(MessageInfo(geminiPerson, false, "ERROR: Connectivity lost. See Logcat for details."))
             }
             binding.tvStatus.text = "↺ Autosaved"
             stopGeminiIndicator()
@@ -546,10 +720,11 @@ class ThirdFragment : Fragment() {
             tag = messageInfo
             val prefix = if (messageInfo.person.isMaster) "★ " else ""
             if (messageInfo.isStory) {
-                text = "> ${messageInfo.originalText}"
+                text = formatTerminalText("> ${messageInfo.originalText}", storyTextColor)
                 setTextColor(storyTextColor)
             } else {
-                text = "[$prefix${messageInfo.person.name.uppercase()}] ${messageInfo.originalText}"
+                val displayText = "[$prefix${messageInfo.person.name.uppercase()}] ${messageInfo.originalText}"
+                text = formatTerminalText(displayText, messageInfo.person.color)
                 setTextColor(messageInfo.person.color)
                 setShadowLayer(8f, 0f, 0f, messageInfo.person.color)
             }
