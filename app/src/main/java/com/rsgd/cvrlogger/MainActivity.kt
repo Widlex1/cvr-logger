@@ -1,94 +1,67 @@
 package com.rsgd.cvrlogger
 
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
+import android.content.res.Configuration
 import android.os.Bundle
-import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupActionBarWithNavController
 import com.rsgd.cvrlogger.databinding.ActivityMainBinding
+import java.util.Locale
 
-class MainActivity : AppCompatActivity() {
+open class BaseActivity : AppCompatActivity() {
 
+    override fun attachBaseContext(newBase: Context) {
+        val prefs = newBase.getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
+        val langCode = prefs.getString("app_language", "en") ?: "en"
+        val uiScale = prefs.getFloat("ui_scale", 1.0f)
+        
+        val context = applySettings(newBase, langCode, uiScale)
+        super.attachBaseContext(context)
+    }
+
+    private fun applySettings(context: Context, lang: String, scale: Float): Context {
+        val locale = Locale(lang)
+        Locale.setDefault(locale)
+        
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(locale)
+        
+        // Apply font scale for text
+        config.fontScale = scale
+        
+        // Note: For a full interface scale (affecting margins/paddings/dimensions),
+        // we can attempt to modify the densityDpi. 
+        // However, fontScale is the safest way to provide "UI Scale" in a fragment-based app
+        // without breaking layout constraints.
+
+        return context.createConfigurationContext(config)
+    }
+}
+
+class MainActivity : BaseActivity() {
+
+    private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
-    private var backPressedTime: Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        applyUiScale()
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
+
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.hide()
 
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                val navController = findNavController(R.id.nav_host_fragment_content_main)
-                val destinationId = navController.currentDestination?.id
-                if (destinationId == R.id.SecondFragment) {
-                    if (backPressedTime + 2000 > System.currentTimeMillis()) {
-                        finish()
-                    } else {
-                        Toast.makeText(baseContext, "Swipe back again to exit system", Toast.LENGTH_SHORT).show()
-                    }
-                    backPressedTime = System.currentTimeMillis()
-                } else {
-                    navController.popBackStack()
-                }
-            }
-        })
-
-        handleIntent(intent)
+        val navController = findNavController(R.id.nav_host_fragment_content_main)
+        appBarConfiguration = AppBarConfiguration(navController.graph)
+        setupActionBarWithNavController(navController, appBarConfiguration)
     }
 
-    private fun applyUiScale() {
-        val prefs = getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
-        val scale = prefs.getFloat("ui_scale", 1.0f)
-        val configuration = resources.configuration
-        configuration.fontScale = scale
-        val metrics = resources.displayMetrics
-        metrics.scaledDensity = configuration.fontScale * metrics.density
-        baseContext.resources.updateConfiguration(configuration, metrics)
-    }
-
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-        handleIntent(intent)
-    }
-
-    private fun handleIntent(intent: Intent?) {
-        if (intent?.action == Intent.ACTION_VIEW || intent?.action == Intent.ACTION_EDIT) {
-            val uri: Uri? = intent.data
-            uri?.let {
-                val fileName = copyFileToInternalStorage(it)
-                if (fileName != null) {
-                    window.decorView.post {
-                        val navController = findNavController(R.id.nav_host_fragment_content_main)
-                        val bundle = bundleOf("fileName" to fileName)
-                        navController.navigate(R.id.FourthFragment, bundle)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun copyFileToInternalStorage(uri: Uri): String? {
-        try {
-            val fileName = "Imported_" + (System.currentTimeMillis() / 1000) + ".log"
-            val tempFile = java.io.File(filesDir, fileName)
-            contentResolver.openInputStream(uri)?.use { inputStream ->
-                java.io.FileOutputStream(tempFile).use { outputStream ->
-                    inputStream.copyTo(outputStream)
-                }
-            }
-            return fileName
-        } catch (e: Exception) {
-            return null
-        }
+    override fun onSupportNavigateUp(): Boolean {
+        val navController = findNavController(R.id.nav_host_fragment_content_main)
+        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 }

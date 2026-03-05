@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.widget.ArrayAdapter
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -18,6 +19,9 @@ class SettingsFragment : Fragment() {
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
     private var tempSelectedColor: String = "#FF2D7D"
+
+    private val languages = listOf("English", "Urdu", "Hindi", "Turkish", "Arabic")
+    private val languageCodes = listOf("en", "ur", "hi", "tr", "ar")
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,13 +43,6 @@ class SettingsFragment : Fragment() {
         binding.btnSave.setOnClickListener {
             saveSettings()
         }
-
-        // Secret interaction to reveal security section
-        binding.secEditing.setOnLongClickListener {
-            binding.layoutSecuritySection.visibility = View.VISIBLE
-            Toast.makeText(context, "SECURITY PROTOCOLS ACCESSIBLE", Toast.LENGTH_SHORT).show()
-            true
-        }
     }
 
     private fun loadSettings() {
@@ -55,16 +52,27 @@ class SettingsFragment : Fragment() {
         val uiScale = prefs.getFloat("ui_scale", 1.0f)
         tempSelectedColor = prefs.getString("accent_color", "#FF2D7D") ?: "#FF2D7D"
         val enterIsSend = prefs.getBoolean("enter_is_send", true)
+        val biometricEnabled = prefs.getBoolean("biometric_enabled", true)
+        val selectedLangCode = prefs.getString("app_language", "en") ?: "en"
         
         val accessPin = prefs.getString("access_pin", "")
         val secretWord = prefs.getString("secret_word", "")
 
         binding.switchEnterSend.isChecked = enterIsSend
+        binding.switchBiometricLock.isChecked = biometricEnabled
         binding.etDefaultUser.setText(defaultUser)
         binding.sliderUiScale.value = uiScale
         
         binding.etAccessPin.setText(accessPin)
         binding.etSecretWord.setText(secretWord)
+
+        // Setup Language Spinner
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, languages)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerLanguage.adapter = adapter
+        
+        val langIndex = languageCodes.indexOf(selectedLangCode)
+        if (langIndex >= 0) binding.spinnerLanguage.setSelection(langIndex)
 
         setupEnterIsSend(binding.etDefaultUser)
 
@@ -146,12 +154,21 @@ class SettingsFragment : Fragment() {
             setStroke(2, accentColor)
             cornerRadius = 12f
         }
+
+        binding.spinnerLanguage.background = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            setStroke(2, accentColor)
+            cornerRadius = 12f
+        }
         
         binding.sliderUiScale.thumbTintList = colorStateList
         binding.sliderUiScale.trackActiveTintList = colorStateList
         
         binding.switchEnterSend.thumbTintList = colorStateList
         binding.switchEnterSend.trackTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#333333"))
+
+        binding.switchBiometricLock.thumbTintList = colorStateList
+        binding.switchBiometricLock.trackTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#333333"))
 
         binding.btnSave.backgroundTintList = null 
         binding.btnSave.setTextColor(accentColor)
@@ -165,14 +182,17 @@ class SettingsFragment : Fragment() {
 
     private fun saveSettings() {
         val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
+        val selectedLangCode = languageCodes[binding.spinnerLanguage.selectedItemPosition]
         
         prefs.edit()
             .putBoolean("enter_is_send", binding.switchEnterSend.isChecked)
+            .putBoolean("biometric_enabled", binding.switchBiometricLock.isChecked)
             .putString("default_user", binding.etDefaultUser.text.toString())
             .putFloat("ui_scale", binding.sliderUiScale.value)
             .putString("accent_color", tempSelectedColor)
             .putString("access_pin", binding.etAccessPin.text.toString())
             .putString("secret_word", binding.etSecretWord.text.toString())
+            .putString("app_language", selectedLangCode)
             .apply()
 
         Toast.makeText(context, "System Reconfigured", Toast.LENGTH_SHORT).show()

@@ -30,7 +30,7 @@ class NotesAdapter(
 
         holder.binding.tvNoteTitle.text = note.title.removeSuffix(".log")
         holder.binding.tvNoteDate.text = note.date
-        holder.binding.tvNoteSnippet.text = if (note.isLocked) "[ ENCRYPTED DATA ]" else note.snippet
+        holder.binding.tvNoteSnippet.text = if (note.isLocked) context.getString(R.string.label_encrypted_data) else note.snippet
         
         holder.binding.tvNoteTitle.setTextColor(accentColor)
 

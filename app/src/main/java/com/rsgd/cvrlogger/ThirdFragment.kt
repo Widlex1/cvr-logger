@@ -72,8 +72,6 @@ class ThirdFragment : Fragment() {
 
     private val storyTextColor = Color.parseColor("#FFA500")
     
-    private var formatMode: String? = null
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -138,8 +136,13 @@ class ThirdFragment : Fragment() {
         }
         
         binding.btnFormatComment.setOnClickListener {
-            if (!isLocked) showFormattingDialog()
-            else showLockedToast()
+            if (!isLocked) {
+                if (binding.etMessageInput.hasSelection()) {
+                    showFormattingDialog()
+                } else {
+                    Toast.makeText(requireContext(), "SELECT TEXT TO FORMAT", Toast.LENGTH_SHORT).show()
+                }
+            } else showLockedToast()
         }
 
         val isEnterSendEnabled = prefs.getBoolean("enter_is_send", true)
@@ -157,8 +160,6 @@ class ThirdFragment : Fragment() {
             else showLockedToast()
         }
         
-        setupFormatClickListeners()
-        
         // Easter Egg
         binding.tvMiniAppName.setOnClickListener {
             Toast.makeText(requireContext(), "SYSTEM_OVERRIDE: [REDACTED]", Toast.LENGTH_SHORT).show()
@@ -169,35 +170,35 @@ class ThirdFragment : Fragment() {
         Toast.makeText(requireContext(), "SESSION LOCKED", Toast.LENGTH_SHORT).show()
     }
 
-    private fun setupFormatClickListeners() {
-        binding.etMessageInput.setOnTouchListener { _, event ->
-            if (!isLocked && event.action == MotionEvent.ACTION_UP && formatMode != null) {
-                val offset = binding.etMessageInput.getOffsetForPosition(event.x, event.y)
-                applyFormatAtOffset(offset)
-                true
-            } else {
-                false
-            }
-        }
+    private fun applyFormatToSelection(prefix: String, suffix: String) {
+        val start = binding.etMessageInput.selectionStart
+        val end = binding.etMessageInput.selectionEnd
+        val originalText = binding.etMessageInput.text
+        
+        val selectedText = originalText.substring(start, end)
+        val newText = "$prefix$selectedText$suffix"
+        
+        originalText.replace(start, end, newText)
+        binding.etMessageInput.setSelection(start + prefix.length + selectedText.length + suffix.length)
     }
 
-    private fun applyFormatAtOffset(offset: Int) {
-        val text = binding.etMessageInput.text
-        val prefix: String
-        val suffix: String
+    private fun showFormattingDialog() {
+        val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
+        val accentColor = Color.parseColor(prefs.getString("accent_color", "#FF2D7D"))
+
+        val dialogBinding = DialogFormatBinding.inflate(layoutInflater)
+        val dialog = AlertDialog.Builder(requireContext(), R.style.CyberDialog)
+            .setView(dialogBinding.root)
+            .create()
+
+        dialogBinding.tvDialogTitle.setTextColor(accentColor)
         
-        when (formatMode) {
-            "BOLD" -> { prefix = "*"; suffix = "*" }
-            "ITALIC" -> { prefix = "_"; suffix = "_" }
-            "UNDERLINE" -> { prefix = "~"; suffix = "~" }
-            "SPARKLE" -> { prefix = "$"; suffix = "$" }
-            else -> return
-        }
-        
-        text.insert(offset, prefix + suffix)
-        binding.etMessageInput.setSelection(offset + prefix.length)
-        formatMode = null
-        binding.etMessageInput.setCursorVisible(true)
+        dialogBinding.btnBold.setOnClickListener { applyFormatToSelection("*", "*"); dialog.dismiss() }
+        dialogBinding.btnItalic.setOnClickListener { applyFormatToSelection("_", "_"); dialog.dismiss() }
+        dialogBinding.btnUnderline.setOnClickListener { applyFormatToSelection("~", "~"); dialog.dismiss() }
+        dialogBinding.btnSparkle.setOnClickListener { applyFormatToSelection("$", "$"); dialog.dismiss() }
+
+        dialog.show()
     }
 
     private fun showFixWiresDialog() {
@@ -239,20 +240,6 @@ class ThirdFragment : Fragment() {
         binding.root.postDelayed({
             applyTheme()
         }, 2000)
-    }
-
-    private fun showFormattingDialog() {
-        val dialogBinding = DialogFormatBinding.inflate(layoutInflater)
-        val dialog = AlertDialog.Builder(requireContext(), R.style.CyberDialog)
-            .setView(dialogBinding.root)
-            .create()
-
-        dialogBinding.btnBold.setOnClickListener { formatMode = "BOLD"; dialog.dismiss(); binding.etMessageInput.setCursorVisible(false) }
-        dialogBinding.btnItalic.setOnClickListener { formatMode = "ITALIC"; dialog.dismiss(); binding.etMessageInput.setCursorVisible(false) }
-        dialogBinding.btnUnderline.setOnClickListener { formatMode = "UNDERLINE"; dialog.dismiss(); binding.etMessageInput.setCursorVisible(false) }
-        dialogBinding.btnSparkle.setOnClickListener { formatMode = "SPARKLE"; dialog.dismiss(); binding.etMessageInput.setCursorVisible(false) }
-
-        dialog.show()
     }
 
     private fun startFirestoreSync() {

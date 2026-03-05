@@ -8,11 +8,21 @@
     android:fitsSystemWindows="true"
     tools:context=".FirstFragment">
 
+    <ImageView
+        android:id="@+id/img_logo"
+        android:layout_width="225dp"
+        android:layout_height="182dp"
+        android:layout_marginTop="80dp"
+        android:src="@drawable/cvr_logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="16dp"
         android:fontFamily="@font/cairo_play_extralight"
         android:letterSpacing="0.1"
         android:text="CVR LOGGER"
@@ -21,7 +31,7 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/img_logo" />
 
     <!-- Side Motion Graphics (Lines) -->
     <View

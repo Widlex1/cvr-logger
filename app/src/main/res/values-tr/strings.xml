@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">CVR Kaydedici</string>
+    <string name="action_settings">Ayarlar</string>
+    <string name="title_settings">SİSTEM YAPILANDIRMASI</string>
+    <string name="sec_entity">VARLIK YAPILANDIRMASI</string>
+    <string name="label_default_name">VARSAYILAN AD:</string>
+    <string name="sec_interface">ARAYÜZ OPTİMİZASYONU</string>
+    <string name="label_ui_scale">ARAYÜZ ÖLÇEĞİ:</string>
+    <string name="label_theme_accent">TEMA VURGUSU:</string>
+    <string name="label_language">DİL:</string>
+    <string name="sec_input">VERİ GİRİŞ PARAMETRELERİ</string>
+    <string name="switch_enter_sends">ENTER TUŞU VERİ GÖNDERİR</string>
+    <string name="sec_encryption">ŞİFRELEME PROTOKOLLERİ</string>
+    <string name="switch_biometric">SİSTEM BİYOMETRİK KİLİDİ</string>
+    <string name="label_access_pin">ERİŞİM PINİ:</string>
+    <string name="label_secret_word">GİZLİ KURTARMA KELİMESİ:</string>
+    <string name="btn_save_changes">DEĞİŞİKLİKLERİ SENKRONİZE ET</string>
+    <string name="title_logs">CVR KAYITLARI</string>
+    <string name="subtitle_storage">DEPOLAMA // AKTİF_OTURUM</string>
+    <string name="btn_import">İÇE AKTAR</string>
+    <string name="btn_new_log">YENİ KAYIT</string>
+
+    <string name="label_autosaved">Otomatik Kaydedildi</string>
+    <string name="label_terminal_output">[ TERMİNAL ÇIKTISI ]</string>
+    <string name="btn_playground">OYUN ALANI</string>
+    <string name="label_sender">GÖNDEREN: </string>
+    <string name="hint_type_entry">Giriş yapın...</string>
+    <string name="btn_send">GÖNDER</string>
+</resources>

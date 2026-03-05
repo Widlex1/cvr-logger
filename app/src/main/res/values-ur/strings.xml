@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">سی وی آر لاگر</string>
+    <string name="action_settings">ترتیبات</string>
+    <string name="title_settings">سسٹم کنفیگریشن</string>
+    <string name="sec_entity">ہستی کی ترتیب</string>
+    <string name="label_default_name">پہلے سے طے شدہ نام:</string>
+    <string name="sec_interface">انٹرفیس آپٹیمائزیشن</string>
+    <string name="label_ui_scale">انٹرفیس اسکیل:</string>
+    <string name="label_theme_accent">تھیم لہجہ:</string>
+    <string name="label_language">زبان:</string>
+    <string name="sec_input">ڈیٹا ان پٹ پیرامیٹرز</string>
+    <string name="switch_enter_sends">انٹر کی ڈیٹا بھیجتی ہے</string>
+    <string name="sec_encryption">انکرپشن پروٹوکولز</string>
+    <string name="switch_biometric">سسٹم بائیو میٹرک لاک</string>
+    <string name="label_access_pin">رسائی پن:</string>
+    <string name="label_secret_word">خفیہ بحالی لفظ:</string>
+    <string name="btn_save_changes">تبدیلیوں کو ہم آہنگ کریں</string>
+    <string name="title_logs">سی وی آر لاگز</string>
+    <string name="subtitle_storage">اسٹوریج // فعال سیشن</string>
+    <string name="btn_import">درآمد کریں</string>
+    <string name="btn_new_log">نیا لاگ</string>
+
+    <string name="label_autosaved">آٹو سیوڈ</string>
+    <string name="label_terminal_output">[ ٹرمینل آؤٹ پٹ ]</string>
+    <string name="btn_playground">پلے گراؤنڈ</string>
+    <string name="label_sender">بھیجنے والا: </string>
+    <string name="hint_type_entry">اندراج ٹائپ کریں...</string>
+    <string name="btn_send">بھیجیں</string>
+</resources>

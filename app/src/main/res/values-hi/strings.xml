@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">सीवीआर लॉगर</string>
+    <string name="action_settings">सेटिंग्स</string>
+    <string name="title_settings">सिस्टम कॉन्फ़िगरेशन</string>
+    <string name="sec_entity">एंटिटी कॉन्फ़िगरेशन</string>
+    <string name="label_default_name">डिफ़ॉल्ट नाम:</string>
+    <string name="sec_interface">इंटरफ़ेस ऑप्टिमाइज़ेशन</string>
+    <string name="label_ui_scale">इंटरफ़ेस स्केल:</string>
+    <string name="label_theme_accent">थीम एक्सेंट:</string>
+    <string name="label_language">भाषा:</string>
+    <string name="sec_input">डेटा इनपुट पैरामीटर</string>
+    <string name="switch_enter_sends">एंटर की डेटा भेजती है</string>
+    <string name="sec_encryption">एन्क्रिप्शन प्रोटोकॉल</string>
+    <string name="switch_biometric">सिस्टम बायोमेट्रिक लॉक</string>
+    <string name="label_access_pin">एक्सेस पिन:</string>
+    <string name="label_secret_word">गुप्त रिकवरी शब्द:</string>
+    <string name="btn_save_changes">परिवर्तनों को सिंक्रनािज़ करें</string>
+    <string name="title_logs">सीवीआर लॉग्स</string>
+    <string name="subtitle_storage">स्टोरेज // सक्रिय_सत्र</string>
+    <string name="btn_import">आयात करें</string>
+    <string name="btn_new_log">नया लॉग</string>
+
+    <string name="label_autosaved">ऑटोसेव्ड</string>
+    <string name="label_terminal_output">[ टर्मिनल आउटपुट ]</string>
+    <string name="btn_playground">प्लेग्राउंड</string>
+    <string name="label_sender">प्रेषक: </string>
+    <string name="hint_type_entry">एंट्री टाइप करें...</string>
+    <string name="btn_send">भेजें</string>
+</resources>

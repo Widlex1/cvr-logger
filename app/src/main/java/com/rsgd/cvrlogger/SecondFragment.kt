@@ -34,6 +34,9 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 
 class SecondFragment : Fragment() {
 
@@ -152,6 +155,41 @@ class SecondFragment : Fragment() {
 
     private fun showAuthDialog(note: Note, onAuthenticated: () -> Unit) {
         val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
+        val biometricEnabled = prefs.getBoolean("biometric_enabled", true)
+        
+        val biometricManager = BiometricManager.from(requireContext())
+        val canAuthenticate = biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+        
+        if (biometricEnabled && canAuthenticate == BiometricManager.BIOMETRIC_SUCCESS) {
+            val executor = ContextCompat.getMainExecutor(requireContext())
+            val biometricPrompt = BiometricPrompt(this, executor, object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(result)
+                    onAuthenticated()
+                }
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    super.onAuthenticationError(errorCode, errString)
+                    if (errorCode != BiometricPrompt.ERROR_NEGATIVE_BUTTON && errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
+                        showPinAuthDialog(note, onAuthenticated)
+                    }
+                }
+            })
+
+            val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                .setTitle("AUTHENTICATION REQUIRED")
+                .setSubtitle("Use fingerprint or device lock to decrypt")
+                .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+                .build()
+
+            biometricPrompt.authenticate(promptInfo)
+        } else {
+            showPinAuthDialog(note, onAuthenticated)
+        }
+    }
+
+    private fun showPinAuthDialog(note: Note, onAuthenticated: () -> Unit) {
+        val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
         val accentColor = Color.parseColor(prefs.getString("accent_color", "#FF2D7D"))
         val correctPin = prefs.getString("access_pin", "") ?: ""
         val secretWord = prefs.getString("secret_word", "") ?: ""
@@ -174,7 +212,7 @@ class SecondFragment : Fragment() {
             cornerRadius = 12f * resources.displayMetrics.density
         }
         authBinding.btnConfirm.setTextColor(accentColor)
-        authBinding.btnForgotPin.setTextColor(Color.parseColor("#00FFFF")) // Keeping cyan for "Forgot"
+        authBinding.btnForgotPin.setTextColor(Color.parseColor("#00FFFF"))
 
         authBinding.btnConfirm.setOnClickListener {
             val enteredPin = authBinding.etAuthPin.text.toString()

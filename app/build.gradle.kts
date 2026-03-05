@@ -48,6 +48,7 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.google.generativeai)
+    implementation(libs.androidx.biometric)
     
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))

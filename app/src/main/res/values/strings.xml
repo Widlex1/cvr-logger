@@ -1,72 +1,41 @@
 <resources>
     <string name="app_name">CVR Logger</string>
     <string name="action_settings">Settings</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
 
-    <string name="lorem_ipsum">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
-        volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus
-        dui nec risus. Maecenas non sodales nisi, vel dictum dolor. Class aptent taciti sociosqu ad
-        litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse blandit eleifend
-        diam, vel rutrum tellus vulputate quis. Aliquam eget libero aliquet, imperdiet nisl a,
-        ornare ex. Sed rhoncus est ut libero porta lobortis. Fusce in dictum tellus.\n\n
-        Suspendisse interdum ornare ante. Aliquam nec cursus lorem. Morbi id magna felis. Vivamus
-        egestas, est a condimentum egestas, turpis nisl iaculis ipsum, in dictum tellus dolor sed
-        neque. Morbi tellus erat, dapibus ut sem a, iaculis tincidunt dui. Interdum et malesuada
-        fames ac ante ipsum primis in faucibus. Curabitur et eros porttitor, ultricies urna vitae,
-        molestie nibh. Phasellus at commodo eros, non aliquet metus. Sed maximus nisl nec dolor
-        bibendum, vel congue leo egestas.\n\n
-        Sed interdum tortor nibh, in sagittis risus mollis quis. Curabitur mi odio, condimentum sit
-        amet auctor at, mollis non turpis. Nullam pretium libero vestibulum, finibus orci vel,
-        molestie quam. Fusce blandit tincidunt nulla, quis sollicitudin libero facilisis et. Integer
-        interdum nunc ligula, et fermentum metus hendrerit id. Vestibulum lectus felis, dictum at
-        lacinia sit amet, tristique id quam. Cras eu consequat dui. Suspendisse sodales nunc ligula,
-        in lobortis sem porta sed. Integer id ultrices magna, in luctus elit. Sed a pellentesque
-        est.\n\n
-        Aenean nunc velit, lacinia sed dolor sed, ultrices viverra nulla. Etiam a venenatis nibh.
-        Morbi laoreet, tortor sed facilisis varius, nibh orci rhoncus nulla, id elementum leo dui
-        non lorem. Nam mollis ipsum quis auctor varius. Quisque elementum eu libero sed commodo. In
-        eros nisl, imperdiet vel imperdiet et, scelerisque a mauris. Pellentesque varius ex nunc,
-        quis imperdiet eros placerat ac. Duis finibus orci et est auctor tincidunt. Sed non viverra
-        ipsum. Nunc quis augue egestas, cursus lorem at, molestie sem. Morbi a consectetur ipsum, a
-        placerat diam. Etiam vulputate dignissim convallis. Integer faucibus mauris sit amet finibus
-        convallis.\n\n
-        Phasellus in aliquet mi. Pellentesque habitant morbi tristique senectus et netus et
-        malesuada fames ac turpis egestas. In volutpat arcu ut felis sagittis, in finibus massa
-        gravida. Pellentesque id tellus orci. Integer dictum, lorem sed efficitur ullamcorper,
-        libero justo consectetur ipsum, in mollis nisl ex sed nisl. Donec maximus ullamcorper
-        sodales. Praesent bibendum rhoncus tellus nec feugiat. In a ornare nulla. Donec rhoncus
-        libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
-        vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
-    </string>
+    <!-- Settings UI Strings -->
+    <string name="title_settings">SYSTEM CONFIGURATION</string>
+    <string name="sec_entity">ENTITY CONFIGURATION</string>
+    <string name="label_default_name">DEFAULT NAME:</string>
+    <string name="sec_interface">INTERFACE OPTIMIZATION</string>
+    <string name="label_ui_scale">INTERFACE SCALE:</string>
+    <string name="label_theme_accent">THEME ACCENT:</string>
+    <string name="label_language">LANGUAGE:</string>
+    <string name="sec_input">DATA INPUT PARAMETERS</string>
+    <string name="switch_enter_sends">ENTER KEY SENDS DATA</string>
+    <string name="sec_encryption">ENCRYPTION PROTOCOLS</string>
+    <string name="switch_biometric">SYSTEM BIOMETRIC LOCK</string>
+    <string name="label_access_pin">ACCESS PIN:</string>
+    <string name="label_secret_word">SECRET RECOVERY WORD:</string>
+    <string name="btn_save_changes">SYNCHRONIZE CHANGES</string>
+
+    <!-- Main Screens -->
+    <string name="title_logs">CVR LOGS</string>
+    <string name="subtitle_storage">STORAGE // ACTIVE_SESSION</string>
+    <string name="btn_import">+ IMPORT</string>
+    <string name="btn_new_log">+ NEW LOG</string>
+    <string name="label_open">OPEN</string>
+    <string name="label_encrypted_data">[ ENCRYPTED DATA ]</string>
+
+    <!-- Third Fragment Strings -->
+    <string name="label_autosaved">↺ Autosaved</string>
+    <string name="label_terminal_output">[ TERMINAL OUTPUT ]</string>
+    <string name="btn_playground">PLAYGROUND</string>
+    <string name="label_sender">SENDER: </string>
+    <string name="hint_type_entry">Type entry...</string>
+    <string name="btn_send">SEND ></string>
 
     <!-- Easter Egg Dialog Strings -->
     <string name="easter_egg_title">SYSTEM MANUAL // CORE_LOG</string>
     <string name="easter_egg_dismiss">DISMISS</string>
-    <string name="easter_egg_footer">[ IN MEMORY OF CVR ]</string>
-    <string name="easter_egg_manual_content">
-        >>> APPLICATION CAPABILITIES:\n\n
-        1. MULTI-ENTITY LOGGING:\n
-        Create entries under different \'Entities\'. Simulate conversations or categorize thoughts from different perspectives.\n\n
-        2. STORY MODE:\n
-        Toggle \'Story Mode\' (>) to format entries as narrative beats. Perfect for world-building or descriptive journal entries.\n\n
-        3. CLOUD SYNC (FIRESTORE):\n
-        Logs are synced to the cloud. Access your sessions from any device or collaborate in real-time by sharing the log name.\n\n
-        4. GEMMA AI INTEGRATION:\n
-        Summon \'Gemma\' using @Gemma or the \'Wake\' button. AI analyzes context to provide helpful or witty responses.\n\n
-        5. DYNAMIC CUSTOMIZATION:\n
-        Change \'Accent Color\' in settings to shift the UI\'s cyberpunk aesthetic. Entities also have signature colors.\n\n
-        6. EXTERNAL FILE HANDLING:\n
-        Import and export .log files. Open .log files directly from device storage into the app terminal.\n\n
-        >>> POTENTIAL USES:\n\n
-        - Cyberpunk Roleplay Terminal\n
-        - Secure Personal Narrative Diary\n
-        - Collaborative Storytelling\n
-        - AI-Assisted World Building\n
-        - Technical \'Mood\' Logger
-    </string>
+    <string name="easter_egg_footer">[ IN THE MEMORY OF CVR ]</string>
 </resources>

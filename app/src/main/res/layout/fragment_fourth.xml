@@ -14,66 +14,119 @@
         android:layout_height="match_parent"
         android:padding="20dp">
 
-        <TextView
-            android:id="@+id/btn_back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="monospace"
-            android:text="← BACK"
-            android:textColor="@color/footer_gray"
-            android:textSize="14sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <!-- Top Toolbar -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/toolbar_read"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/border_pink"
+            android:paddingHorizontal="12dp"
+            app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/tv_read_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="monospace"
-            android:text="LOG_2024.LOG"
-            android:textColor="@color/accent_pink"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            <ImageView
+                android:id="@+id/btn_back"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/footer_gray" />
 
-        <TextView
-            android:id="@+id/tv_read_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:fontFamily="monospace"
-            android:text="2044.01.16 02:15:33"
-            android:textColor="@color/footer_gray"
-            android:textSize="12sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_read_title" />
+            <TextView
+                android:id="@+id/tv_read_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="8dp"
+                android:ellipsize="middle"
+                android:fontFamily="monospace"
+                android:singleLine="true"
+                android:text="Log_2024.log"
+                android:textColor="@color/accent_pink"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/tv_status"
+                app:layout_constraintStart_toEndOf="@id/btn_back"
+                app:layout_constraintTop_toTopOf="parent" />
 
+            <TextView
+                android:id="@+id/tv_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:fontFamily="monospace"
+                android:text="↺ Autosaved"
+                android:textColor="@color/footer_gray"
+                android:textSize="10sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/img_mini_logo"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/img_mini_logo"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/cvr_logo"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/tv_mini_app_name"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tv_mini_app_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:fontFamily="monospace"
+                android:gravity="end"
+                android:text="CVR\nLOGGER"
+                android:textColor="@color/accent_pink"
+                android:textSize="7sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Terminal Display Area -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/read_container"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="12dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
             android:background="@drawable/border_pink"
             android:padding="16dp"
             app:layout_constraintBottom_toTopOf="@id/layout_read_buttons"
-            app:layout_constraintTop_toBottomOf="@id/tv_read_date">
+            app:layout_constraintTop_toBottomOf="@id/toolbar_read">
 
             <ScrollView
+                android:id="@+id/scroll_terminal"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <TextView
-                    android:id="@+id/tv_read_content"
+                <LinearLayout
+                    android:id="@+id/layout_read_messages"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="monospace"
-                    android:textColor="@color/terminal_white"
-                    android:textSize="14sp" />
+                    android:orientation="vertical" />
             </ScrollView>
+
+            <TextView
+                android:id="@+id/tv_guide_terminal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:text="[ TERMINAL OUTPUT ]"
+                android:textColor="#33666666"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

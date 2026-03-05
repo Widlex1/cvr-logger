@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">مسجل CVR</string>
+    <string name="action_settings">الإعدادات</string>
+    <string name="title_settings">تكوين النظام</string>
+    <string name="sec_entity">تكوين الكيان</string>
+    <string name="label_default_name">الاسم الافتراضي:</string>
+    <string name="sec_interface">تحسين الواجهة</string>
+    <string name="label_ui_scale">مقياس الواجهة:</string>
+    <string name="label_theme_accent">لكنة السمة:</string>
+    <string name="label_language">اللغة:</string>
+    <string name="sec_input">معلمات إدخال البيانات</string>
+    <string name="switch_enter_sends">مفتاح الإدخال يرسل البيانات</string>
+    <string name="sec_encryption">بروتوكولات التشفير</string>
+    <string name="switch_biometric">قفل النظام البيومتري</string>
+    <string name="label_access_pin">رمز الوصول:</string>
+    <string name="label_secret_word">كلمة الاسترداد السرية:</string>
+    <string name="btn_save_changes">مزامنة التغييرات</string>
+    <string name="title_logs">سجلات CVR</string>
+    <string name="subtitle_storage">التخزين // جلسة نشطة</string>
+    <string name="btn_import">+ استيراد</string>
+    <string name="btn_new_log">+ سجل جديد</string>
+    <string name="label_open">فتح</string>
+    <string name="label_encrypted_data">[ بيانات مشفرة ]</string>
+
+    <string name="label_autosaved">تم الحفظ تلقائياً</string>
+    <string name="label_terminal_output">[ مخرجات الجهاز ]</string>
+    <string name="btn_playground">ساحة اللعب</string>
+    <string name="label_sender">المرسل: </string>
+    <string name="hint_type_entry">اكتب الإدخال...</string>
+    <string name="btn_send">إرسال</string>
+</resources>
