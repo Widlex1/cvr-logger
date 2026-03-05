@@ -79,7 +79,7 @@
                 android:layout_marginStart="4dp"
                 android:fontFamily="monospace"
                 android:gravity="end"
-                android:text="CUTEee\nDIARY"
+                android:text="CVR\nLOGGER"
                 android:textColor="@color/accent_pink"
                 android:textSize="7sp"
                 android:textStyle="bold"

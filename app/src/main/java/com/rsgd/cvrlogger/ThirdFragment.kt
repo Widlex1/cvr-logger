@@ -22,6 +22,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -30,6 +31,7 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.rsgd.cvrlogger.databinding.FragmentThirdBinding
 import com.rsgd.cvrlogger.databinding.DialogAddPersonBinding
 import com.rsgd.cvrlogger.databinding.DialogFormatBinding
+import com.rsgd.cvrlogger.databinding.DialogRenameBinding
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -62,6 +64,7 @@ class ThirdFragment : Fragment() {
     private var selectedPersonIndex = 0
     private var editingMessageView: TextView? = null
     private var isStoryMode: Boolean = false
+    private var isLocked: Boolean = false
 
     private val db = FirebaseFirestore.getInstance()
     private var firestoreListener: ListenerRegistration? = null
@@ -91,12 +94,12 @@ class ThirdFragment : Fragment() {
         currentFileName = arguments?.getString("fileName")
         
         if (currentFileName != null) {
-            binding.tvEditorTitle.text = currentFileName
+            binding.tvEditorTitle.text = currentFileName?.removeSuffix(".log")
             loadExistingContent()
         } else {
             val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
             currentFileName = "Log_${timeStamp}.log"
-            binding.tvEditorTitle.text = currentFileName
+            binding.tvEditorTitle.text = currentFileName?.removeSuffix(".log")
             
             val defaultName = prefs.getString("default_user", "System") ?: "System"
             people.add(Person(defaultName, "#FF2D7D".toColorInt(), isMaster = true))
@@ -116,28 +119,33 @@ class ThirdFragment : Fragment() {
         setupSenderSwipe()
 
         binding.btnPlayground.setOnClickListener {
-            showFixWiresDialog()
+            if (!isLocked) showFixWiresDialog()
+            else showLockedToast()
         }
 
         binding.btnAddPerson.setOnClickListener {
-            showAddPersonDialog()
+            if (!isLocked) showAddPersonDialog()
+            else showLockedToast()
         }
 
         binding.btnFormatQuote.setOnClickListener {
-            isStoryMode = !isStoryMode
-            recreateAllMessages()
-            saveStoryModeState()
-            applyTheme()
+            if (!isLocked) {
+                isStoryMode = !isStoryMode
+                recreateAllMessages()
+                saveStoryModeState()
+                applyTheme()
+            } else showLockedToast()
         }
         
         binding.btnFormatComment.setOnClickListener {
-            showFormattingDialog()
+            if (!isLocked) showFormattingDialog()
+            else showLockedToast()
         }
 
         val isEnterSendEnabled = prefs.getBoolean("enter_is_send", true)
         if (isEnterSendEnabled) {
             binding.etMessageInput.setOnEditorActionListener { _, actionId, _ ->
-                if (actionId == EditorInfo.IME_ACTION_SEND || actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED) {
+                if (!isLocked && (actionId == EditorInfo.IME_ACTION_SEND || actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED)) {
                     sendMessage()
                     true
                 } else false
@@ -145,15 +153,25 @@ class ThirdFragment : Fragment() {
         }
 
         binding.btnSend.setOnClickListener {
-            sendMessage()
+            if (!isLocked) sendMessage()
+            else showLockedToast()
         }
         
         setupFormatClickListeners()
+        
+        // Easter Egg
+        binding.tvMiniAppName.setOnClickListener {
+            Toast.makeText(requireContext(), "SYSTEM_OVERRIDE: [REDACTED]", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showLockedToast() {
+        Toast.makeText(requireContext(), "SESSION LOCKED", Toast.LENGTH_SHORT).show()
     }
 
     private fun setupFormatClickListeners() {
         binding.etMessageInput.setOnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_UP && formatMode != null) {
+            if (!isLocked && event.action == MotionEvent.ACTION_UP && formatMode != null) {
                 val offset = binding.etMessageInput.getOffsetForPosition(event.x, event.y)
                 applyFormatAtOffset(offset)
                 true
@@ -189,7 +207,7 @@ class ThirdFragment : Fragment() {
         val currentOrder = wires.toMutableList()
         currentOrder.shuffle()
 
-        val builder = AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_Alert)
+        val builder = AlertDialog.Builder(requireContext(), R.style.CyberDialog)
         builder.setTitle("FIX THE WIRES")
         
         val items = currentOrder.toTypedArray()
@@ -235,22 +253,6 @@ class ThirdFragment : Fragment() {
         dialogBinding.btnSparkle.setOnClickListener { formatMode = "SPARKLE"; dialog.dismiss(); binding.etMessageInput.setCursorVisible(false) }
 
         dialog.show()
-    }
-
-    private fun wrapSelection(prefix: String, suffix: String) {
-        val start = binding.etMessageInput.selectionStart
-        val end = binding.etMessageInput.selectionEnd
-        val text = binding.etMessageInput.text.toString()
-        
-        if (start != end) {
-            val selected = text.substring(start, end)
-            val newText = text.substring(0, start) + prefix + selected + suffix + text.substring(end)
-            binding.etMessageInput.setText(newText)
-            binding.etMessageInput.setSelection(start + prefix.length, end + prefix.length)
-        } else {
-            binding.etMessageInput.text.insert(start, prefix + suffix)
-            binding.etMessageInput.setSelection(start + prefix.length)
-        }
     }
 
     private fun startFirestoreSync() {
@@ -446,39 +448,54 @@ class ThirdFragment : Fragment() {
     }
 
     private fun showRenameDialog() {
-        val input = EditText(requireContext()).apply {
-            setText(currentFileName)
-            setSelection(currentFileName?.length ?: 0)
+        val dialogBinding = DialogRenameBinding.inflate(layoutInflater)
+        val dialog = AlertDialog.Builder(requireContext(), R.style.CyberDialog)
+            .setView(dialogBinding.root)
+            .create()
+
+        val nameWithoutExt = currentFileName?.removeSuffix(".log") ?: ""
+        dialogBinding.etSessionName.setText(nameWithoutExt)
+        dialogBinding.etSessionName.setSelection(nameWithoutExt.length)
+
+        dialogBinding.btnAbort.setOnClickListener {
+            dialog.dismiss()
         }
-        
-        AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_Alert)
-            .setTitle("RENAME SESSION")
-            .setView(input)
-            .setPositiveButton("UPDATE") { _, _ ->
-                val newName = input.text.toString()
-                if (newName.isNotBlank() && newName != currentFileName) {
-                    val oldFile = File(requireContext().filesDir, currentFileName!!)
-                    val finalNewName = if (newName.endsWith(".log")) newName else "${newName}.log"
-                    val newFile = File(requireContext().filesDir, finalNewName)
-                    if (oldFile.renameTo(newFile)) {
-                        currentFileName = finalNewName
-                        binding.tvEditorTitle.text = currentFileName
-                    }
+
+        dialogBinding.btnUpdate.setOnClickListener {
+            val newName = dialogBinding.etSessionName.text.toString()
+            if (newName.isNotBlank() && newName != nameWithoutExt) {
+                val oldFile = File(requireContext().filesDir, currentFileName!!)
+                val finalNewName = if (newName.endsWith(".log")) newName else "${newName}.log"
+                val newFile = File(requireContext().filesDir, finalNewName)
+                if (oldFile.renameTo(newFile)) {
+                    currentFileName = finalNewName
+                    binding.tvEditorTitle.text = newName
+                    dialog.dismiss()
+                } else {
+                    Toast.makeText(requireContext(), "Rename failed", Toast.LENGTH_SHORT).show()
                 }
+            } else {
+                dialog.dismiss()
             }
-            .setNegativeButton("ABORT", null)
-            .show()
+        }
+
+        dialog.show()
     }
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setupSenderSwipe() {
         val gestureDetector = GestureDetector(requireContext(), object : GestureDetector.SimpleOnGestureListener() {
             override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-                showChoosePersonDialog()
+                if (!isLocked) showChoosePersonDialog()
+                else showLockedToast()
                 return true
             }
 
             override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+                if (isLocked) {
+                    showLockedToast()
+                    return false
+                }
                 if (people.isEmpty()) return false
                 if (Math.abs(velocityY) > Math.abs(velocityX)) {
                     if (velocityY > 0) selectedPersonIndex = (selectedPersonIndex + 1) % people.size
@@ -531,7 +548,7 @@ class ThirdFragment : Fragment() {
         }
         dialogView.addView(title)
 
-        val dialog = AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_Alert).setView(dialogView).create()
+        val dialog = AlertDialog.Builder(requireContext(), R.style.CyberDialog).setView(dialogView).create()
 
         people.forEachIndexed { index, person ->
             val itemLayout = LinearLayout(requireContext()).apply {
@@ -571,7 +588,7 @@ class ThirdFragment : Fragment() {
     private fun showAddPersonDialog(personToEdit: Person? = null) {
         if (!binding.senderArea.isClickable) return
         val dialogBinding = DialogAddPersonBinding.inflate(layoutInflater)
-        val dialog = AlertDialog.Builder(requireContext()).setView(dialogBinding.root).create()
+        val dialog = AlertDialog.Builder(requireContext(), R.style.CyberDialog).setView(dialogBinding.root).create()
 
         if (personToEdit != null) {
             dialogBinding.tvDialogTitle.text = "EDIT ENTITY"
@@ -672,6 +689,10 @@ class ThirdFragment : Fragment() {
             orientation = LinearLayout.VERTICAL
             setPadding(0, 12, 0, 12)
             setOnClickListener {
+                if (isLocked) {
+                    showLockedToast()
+                    return@setOnClickListener
+                }
                 val row = getChildAt(0) as LinearLayout
                 val tv = row.getChildAt(1) as TextView
                 val msgInfo = tv.tag as? MessageInfo ?: return@setOnClickListener
@@ -683,7 +704,8 @@ class ThirdFragment : Fragment() {
                 if (idx != -1) { selectedPersonIndex = idx; updateSenderUI() }
             }
             setOnLongClickListener {
-                if (people.getOrNull(selectedPersonIndex)?.isMaster == true) showDeleteLineDialog(this)
+                if (!isLocked && people.getOrNull(selectedPersonIndex)?.isMaster == true) showDeleteLineDialog(this)
+                else if (isLocked) showLockedToast()
                 true
             }
         }
@@ -719,7 +741,7 @@ class ThirdFragment : Fragment() {
     }
 
     private fun showDeleteLineDialog(view: View) {
-        AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_Alert)
+        AlertDialog.Builder(requireContext(), R.style.CyberDialog)
             .setTitle("DELETE LINE").setPositiveButton("DELETE") { _, _ ->
                 binding.layoutMessages.removeView(view); recalculateLines(); saveContent()
             }.setNegativeButton("ABORT", null).show()

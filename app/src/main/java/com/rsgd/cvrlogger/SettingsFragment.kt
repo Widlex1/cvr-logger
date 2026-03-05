@@ -39,6 +39,13 @@ class SettingsFragment : Fragment() {
         binding.btnSave.setOnClickListener {
             saveSettings()
         }
+
+        // Secret interaction to reveal security section
+        binding.secEditing.setOnLongClickListener {
+            binding.layoutSecuritySection.visibility = View.VISIBLE
+            Toast.makeText(context, "SECURITY PROTOCOLS ACCESSIBLE", Toast.LENGTH_SHORT).show()
+            true
+        }
     }
 
     private fun loadSettings() {
@@ -48,10 +55,16 @@ class SettingsFragment : Fragment() {
         val uiScale = prefs.getFloat("ui_scale", 1.0f)
         tempSelectedColor = prefs.getString("accent_color", "#FF2D7D") ?: "#FF2D7D"
         val enterIsSend = prefs.getBoolean("enter_is_send", true)
+        
+        val accessPin = prefs.getString("access_pin", "")
+        val secretWord = prefs.getString("secret_word", "")
 
         binding.switchEnterSend.isChecked = enterIsSend
         binding.etDefaultUser.setText(defaultUser)
         binding.sliderUiScale.value = uiScale
+        
+        binding.etAccessPin.setText(accessPin)
+        binding.etSecretWord.setText(secretWord)
 
         setupEnterIsSend(binding.etDefaultUser)
 
@@ -114,8 +127,21 @@ class SettingsFragment : Fragment() {
         binding.secUser.setTextColor(accentColor)
         binding.secUi.setTextColor(accentColor)
         binding.secEditing.setTextColor(accentColor)
+        binding.secSecurity.setTextColor(accentColor)
 
         binding.etDefaultUser.background = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            setStroke(2, accentColor)
+            cornerRadius = 12f
+        }
+        
+        binding.etAccessPin.background = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            setStroke(2, accentColor)
+            cornerRadius = 12f
+        }
+        
+        binding.etSecretWord.background = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             setStroke(2, accentColor)
             cornerRadius = 12f
@@ -145,6 +171,8 @@ class SettingsFragment : Fragment() {
             .putString("default_user", binding.etDefaultUser.text.toString())
             .putFloat("ui_scale", binding.sliderUiScale.value)
             .putString("accent_color", tempSelectedColor)
+            .putString("access_pin", binding.etAccessPin.text.toString())
+            .putString("secret_word", binding.etSecretWord.text.toString())
             .apply()
 
         Toast.makeText(context, "System Reconfigured", Toast.LENGTH_SHORT).show()

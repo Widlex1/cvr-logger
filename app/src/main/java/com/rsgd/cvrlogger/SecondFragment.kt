@@ -24,6 +24,11 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.card.MaterialCardView
 import com.rsgd.cvrlogger.databinding.FragmentSecondBinding
+import com.rsgd.cvrlogger.databinding.DialogLogOptionsBinding
+import com.rsgd.cvrlogger.databinding.DialogRenameBinding
+import com.rsgd.cvrlogger.databinding.DialogAuthBinding
+import com.rsgd.cvrlogger.databinding.DialogRecoveryBinding
+import com.rsgd.cvrlogger.databinding.DialogInfoBinding
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -61,7 +66,6 @@ class SecondFragment : Fragment() {
             findNavController().navigate(R.id.action_SecondFragment_to_ThirdFragment)
         }
 
-        // Easter Egg: Press and hold title
         binding.tvHeaderTitle.setOnLongClickListener {
             showEasterEgg()
             true
@@ -78,28 +82,213 @@ class SecondFragment : Fragment() {
         binding.btnSettings.setOnClickListener {
             findNavController().navigate(R.id.action_SecondFragment_to_SettingsFragment)
         }
+    }
 
-        binding.btnDelete.setOnClickListener {
-            val selectedNotes = adapter.getNotes().filter { it.isSelected }
-            AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_Alert)
-                .setTitle("DELETE LOGS")
-                .setMessage("Are you sure you want to delete ${selectedNotes.size} log(s)?")
-                .setPositiveButton("DELETE") { _, _ ->
-                    selectedNotes.forEach { note ->
-                        File(requireContext().filesDir, note.fileName).delete()
-                    }
-                    loadNotes()
-                }
-                .setNegativeButton("ABORT", null)
-                .show()
+    private fun showLogOptionsDialog(note: Note) {
+        val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
+        val accentColor = Color.parseColor(prefs.getString("accent_color", "#FF2D7D"))
+
+        val dialogBinding = DialogLogOptionsBinding.inflate(layoutInflater)
+        val dialog = AlertDialog.Builder(requireContext(), R.style.CyberDialog)
+            .setView(dialogBinding.root)
+            .create()
+
+        dialogBinding.tvDialogTitle.setTextColor(accentColor)
+        dialogBinding.btnLock.text = if (note.isLocked) "UNLOCK LOG" else "LOCK LOG"
+        dialogBinding.btnLock.setTextColor(accentColor)
+        dialogBinding.btnRename.setTextColor(accentColor)
+        dialogBinding.btnDelete.setTextColor(accentColor)
+        dialogBinding.btnExport.setTextColor(accentColor)
+
+        dialogBinding.btnRename.setOnClickListener {
+            dialog.dismiss()
+            showRenameDialog(note)
         }
 
-        binding.btnRename.setOnClickListener {
-            val selectedNote = adapter.getNotes().find { it.isSelected }
-            if (selectedNote != null) {
-                showRenameDialog(selectedNote)
+        dialogBinding.btnLock.setOnClickListener {
+            if (note.isLocked) {
+                showAuthDialog(note) {
+                    note.isLocked = false
+                    saveLockState(note)
+                    adapter.notifyDataSetChanged()
+                    dialog.dismiss()
+                }
+            } else {
+                note.isLocked = true
+                saveLockState(note)
+                adapter.notifyDataSetChanged()
+                dialog.dismiss()
+                Toast.makeText(context, "LOG ENCRYPTED", Toast.LENGTH_SHORT).show()
             }
         }
+
+        dialogBinding.btnDelete.setOnClickListener {
+            val confirmBinding = DialogInfoBinding.inflate(layoutInflater)
+            val confirmDialog = AlertDialog.Builder(requireContext(), R.style.CyberDialog)
+                .setView(confirmBinding.root)
+                .create()
+            
+            confirmBinding.tvDialogTitle.text = "DELETE LOG"
+            confirmBinding.tvDialogTitle.setTextColor(accentColor)
+            confirmBinding.tvDialogMsg.text = "Are you sure you want to permanently delete this log?"
+            confirmBinding.btnOk.text = "DELETE"
+            confirmBinding.btnOk.setTextColor(accentColor)
+            confirmBinding.btnOk.setOnClickListener {
+                File(requireContext().filesDir, note.fileName).delete()
+                loadNotes()
+                confirmDialog.dismiss()
+                dialog.dismiss()
+            }
+            confirmDialog.show()
+        }
+
+        dialogBinding.btnExport.setOnClickListener {
+            Toast.makeText(context, "EXPORTING DATA...", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun showAuthDialog(note: Note, onAuthenticated: () -> Unit) {
+        val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
+        val accentColor = Color.parseColor(prefs.getString("accent_color", "#FF2D7D"))
+        val correctPin = prefs.getString("access_pin", "") ?: ""
+        val secretWord = prefs.getString("secret_word", "") ?: ""
+
+        if (correctPin.isEmpty()) {
+            Toast.makeText(context, "NO PIN SET IN SETTINGS", Toast.LENGTH_SHORT).show()
+            onAuthenticated() 
+            return
+        }
+
+        val authBinding = DialogAuthBinding.inflate(layoutInflater)
+        val authDialog = AlertDialog.Builder(requireContext(), R.style.CyberDialog)
+            .setView(authBinding.root)
+            .create()
+
+        authBinding.tvDialogTitle.setTextColor(accentColor)
+        authBinding.etAuthPin.background = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            setStroke(2, accentColor)
+            cornerRadius = 12f * resources.displayMetrics.density
+        }
+        authBinding.btnConfirm.setTextColor(accentColor)
+        authBinding.btnForgotPin.setTextColor(Color.parseColor("#00FFFF")) // Keeping cyan for "Forgot"
+
+        authBinding.btnConfirm.setOnClickListener {
+            val enteredPin = authBinding.etAuthPin.text.toString()
+            if (enteredPin == correctPin) {
+                authDialog.dismiss()
+                onAuthenticated()
+            } else {
+                Toast.makeText(context, "ACCESS DENIED: INVALID PIN", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        authBinding.btnCancel.setOnClickListener { authDialog.dismiss() }
+
+        authBinding.btnForgotPin.setOnClickListener {
+            authDialog.dismiss()
+            showRecoveryDialog(secretWord, correctPin)
+        }
+
+        authDialog.show()
+    }
+
+    private fun showRecoveryDialog(correctWord: String, pinToReveal: String) {
+        val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
+        val accentColor = Color.parseColor(prefs.getString("accent_color", "#FF2D7D"))
+
+        val recoveryBinding = DialogRecoveryBinding.inflate(layoutInflater)
+        val recoveryDialog = AlertDialog.Builder(requireContext(), R.style.CyberDialog)
+            .setView(recoveryBinding.root)
+            .create()
+
+        recoveryBinding.tvDialogTitle.setTextColor(accentColor)
+        recoveryBinding.etRecoveryWord.background = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            setStroke(2, accentColor)
+            cornerRadius = 12f * resources.displayMetrics.density
+        }
+        recoveryBinding.btnVerify.setTextColor(accentColor)
+
+        recoveryBinding.btnVerify.setOnClickListener {
+            if (recoveryBinding.etRecoveryWord.text.toString() == correctWord) {
+                recoveryDialog.dismiss()
+                val infoBinding = DialogInfoBinding.inflate(layoutInflater)
+                val infoDialog = AlertDialog.Builder(requireContext(), R.style.CyberDialog)
+                    .setView(infoBinding.root)
+                    .create()
+                
+                infoBinding.tvDialogTitle.text = "PROTOCOL BYPASSED"
+                infoBinding.tvDialogTitle.setTextColor(accentColor)
+                infoBinding.tvDialogMsg.text = "YOUR ACCESS PIN IS: $pinToReveal"
+                infoBinding.btnOk.setTextColor(accentColor)
+                infoBinding.btnOk.setOnClickListener { infoDialog.dismiss() }
+                infoDialog.show()
+            } else {
+                Toast.makeText(context, "VERIFICATION FAILED", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        recoveryBinding.btnAbort.setOnClickListener { recoveryDialog.dismiss() }
+        recoveryDialog.show()
+    }
+
+    private fun saveLockState(note: Note) {
+        val prefs = requireContext().getSharedPreferences("CVRLoggerLocks", Context.MODE_PRIVATE)
+        prefs.edit().putBoolean(note.fileName, note.isLocked).apply()
+    }
+
+    private fun loadLockState(fileName: String): Boolean {
+        val prefs = requireContext().getSharedPreferences("CVRLoggerLocks", Context.MODE_PRIVATE)
+        return prefs.getBoolean(fileName, false)
+    }
+
+    private fun showRenameDialog(note: Note) {
+        val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
+        val accentColor = Color.parseColor(prefs.getString("accent_color", "#FF2D7D"))
+
+        val dialogBinding = DialogRenameBinding.inflate(layoutInflater)
+        val dialog = AlertDialog.Builder(requireContext(), R.style.CyberDialog)
+            .setView(dialogBinding.root)
+            .create()
+
+        dialogBinding.tvDialogTitle.setTextColor(accentColor)
+        dialogBinding.etSessionName.background = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            setStroke(2, accentColor)
+            cornerRadius = 12f * resources.displayMetrics.density
+        }
+        dialogBinding.btnUpdate.setTextColor(accentColor)
+
+        val nameWithoutExt = note.fileName.removeSuffix(".log")
+        dialogBinding.etSessionName.setText(nameWithoutExt)
+        dialogBinding.etSessionName.setSelection(nameWithoutExt.length)
+
+        dialogBinding.btnAbort.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialogBinding.btnUpdate.setOnClickListener {
+            val newName = dialogBinding.etSessionName.text.toString()
+            if (newName.isNotBlank() && newName != nameWithoutExt) {
+                val oldFile = File(requireContext().filesDir, note.fileName)
+                val finalNewName = if (newName.endsWith(".log")) newName else "${newName}.log"
+                val newFile = File(requireContext().filesDir, finalNewName)
+                if (oldFile.renameTo(newFile)) {
+                    loadNotes()
+                    dialog.dismiss()
+                } else {
+                    Toast.makeText(requireContext(), "Rename failed", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                dialog.dismiss()
+            }
+        }
+
+        dialog.show()
     }
 
     private fun showEasterEgg() {
@@ -110,26 +299,18 @@ class SecondFragment : Fragment() {
         val cardRoot = dialogView as? MaterialCardView
         val title = dialogView.findViewById<TextView>(R.id.tv_easter_egg_msg)
         val closeBtn = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_close_secret)
-        val lineTop = dialogView.findViewById<View>(R.id.glitch_line_top)
-        val lineBottom = dialogView.findViewById<View>(R.id.glitch_line_bottom)
         val scanline = dialogView.findViewById<View>(R.id.view_scanline)
 
-        // Theme application
         cardRoot?.strokeColor = accentColor
         title?.setTextColor(accentColor)
         closeBtn?.setStrokeColor(android.content.res.ColorStateList.valueOf(accentColor))
         closeBtn?.setTextColor(accentColor)
-        lineTop?.setBackgroundColor(accentColor)
-        lineBottom?.setBackgroundColor(accentColor)
         scanline?.setBackgroundColor(accentColor)
 
-        val dialog = AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_Alert)
+        val dialog = AlertDialog.Builder(requireContext(), R.style.CyberDialog)
             .setView(dialogView)
             .create()
 
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-
-        // Scanline Animation
         scanline?.post {
             val parentHeight = (scanline.parent as View).height.toFloat()
             ObjectAnimator.ofFloat(scanline, "translationY", -20f, parentHeight).apply {
@@ -160,9 +341,6 @@ class SecondFragment : Fragment() {
         binding.btnNewNote.setStrokeColor(android.content.res.ColorStateList.valueOf(accentColor))
         binding.btnNewNote.setTextColor(accentColor)
         binding.btnSettings.setColorFilter(accentColor)
-        binding.btnDelete.setColorFilter(accentColor)
-        binding.btnRename.setColorFilter(accentColor)
-        binding.btnExport.setColorFilter(accentColor)
         
         binding.btnImportLog.setStrokeColor(android.content.res.ColorStateList.valueOf(accentColor))
         binding.btnImportLog.setTextColor(accentColor)
@@ -179,84 +357,72 @@ class SecondFragment : Fragment() {
             }
 
             if (!fileName.lowercase().endsWith(".log")) {
-                Toast.makeText(requireContext(), "Error: Only .log files are allowed!", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Error: Only .log files are allowed!", Toast.LENGTH_SHORT).show()
                 return
             }
 
-            val inputStream = requireContext().contentResolver.openInputStream(uri)
-            val destinationFileName = "Imported_" + System.currentTimeMillis() + ".log"
-            val file = File(requireContext().filesDir, destinationFileName)
-            
-            inputStream?.use { input ->
-                FileOutputStream(file).use { output ->
-                    input.copyTo(output)
+            requireContext().contentResolver.openInputStream(uri)?.use { inputStream ->
+                val destFile = File(requireContext().filesDir, fileName)
+                FileOutputStream(destFile).use { outputStream ->
+                    inputStream.copyTo(outputStream)
                 }
             }
             loadNotes()
             Toast.makeText(requireContext(), "Log imported successfully", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(requireContext(), "Failed to import log", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Import failed: ${e.message}", Toast.LENGTH_SHORT).show()
         }
-    }
-
-    private fun showRenameDialog(note: Note) {
-        val input = EditText(requireContext()).apply {
-            setText(note.fileName)
-            setSelection(note.fileName.length)
-        }
-        
-        AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_Alert)
-            .setTitle("RENAME LOG")
-            .setView(input)
-            .setPositiveButton("CONFIRM") { _, _ ->
-                val newName = input.text.toString()
-                if (newName.isNotBlank() && newName != note.fileName) {
-                    val oldFile = File(requireContext().filesDir, note.fileName)
-                    val newFile = File(requireContext().filesDir, if (newName.endsWith(".log")) newName else "$newName.log")
-                    if (oldFile.renameTo(newFile)) {
-                        loadNotes()
-                    }
-                }
-            }
-            .setNegativeButton("ABORT", null)
-            .show()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        loadNotes()
-        applyGlobalTheme()
     }
 
     private fun setupRecyclerView() {
         adapter = NotesAdapter(mutableListOf(), 
             onNoteClick = { note ->
-                val bundle = bundleOf("fileName" to note.fileName)
-                findNavController().navigate(R.id.action_SecondFragment_to_FourthFragment, bundle)
+                val navigate = {
+                    val bundle = bundleOf("fileName" to note.fileName)
+                    findNavController().navigate(R.id.action_SecondFragment_to_FourthFragment, bundle)
+                }
+
+                if (note.isLocked) {
+                    showAuthDialog(note) { navigate() }
+                } else {
+                    navigate()
+                }
             },
-            onSelectionChanged = { hasSelection ->
-                binding.btnDelete.visibility = if (hasSelection) View.VISIBLE else View.GONE
-                val selectionCount = adapter.getNotes().count { it.isSelected }
-                binding.btnRename.visibility = if (selectionCount == 1) View.VISIBLE else View.GONE
+            onNoteLongClick = { note ->
+                showLogOptionsDialog(note)
             }
         )
-
-        binding.rvNotes.layoutManager = LinearLayoutManager(context)
+        binding.rvNotes.layoutManager = LinearLayoutManager(requireContext())
         binding.rvNotes.adapter = adapter
+        loadNotes()
     }
 
     private fun loadNotes() {
-        val filesDir = requireContext().filesDir
-        val logFiles = filesDir.listFiles { _, name -> name.endsWith(".log") } ?: arrayOf()
-        
-        val notes = logFiles.map { file ->
-            val lastModified = SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date(file.lastModified()))
-            val lines = file.readLines()
-            val snippet = lines.lastOrNull()?.split("|")?.lastOrNull() ?: "Empty log..."
-            Note(file.name, lastModified, snippet, file.name)
-        }.sortedByDescending { File(filesDir, it.fileName).lastModified() }
+        val files = requireContext().filesDir.listFiles { file ->
+            file.isFile && file.name.endsWith(".log")
+        }?.sortedByDescending { it.lastModified() } ?: emptyList()
 
+        val notes = files.map { file ->
+            val lastLine = try {
+                file.useLines { it.lastOrNull() ?: "" }
+            } catch (e: Exception) {
+                ""
+            }
+
+            val snippet = if (lastLine.contains("|")) {
+                lastLine.substringAfterLast("|")
+            } else {
+                lastLine
+            }
+            
+            Note(
+                title = file.name.removeSuffix(".log"),
+                date = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault()).format(Date(file.lastModified())),
+                snippet = snippet,
+                fileName = file.name,
+                isLocked = loadLockState(file.name)
+            )
+        }
         adapter.updateNotes(notes)
     }
 
