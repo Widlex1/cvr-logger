@@ -1,8 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.google.gms.google.services)
-    alias(libs.plugins.google.firebase.crashlytics)
 }
 
 android {
@@ -13,8 +11,8 @@ android {
         applicationId = "com.rsgd.cvrlogger"
         minSdk = 24
         targetSdk = 36
-        versionCode = 4      // Incrementing for v3.0
-        versionName = "3.0"  // CVR Logger Milestone
+        versionCode = 4
+        versionName = "3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -34,6 +32,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
+        @Suppress("DEPRECATION")
         jvmTarget = "11"
     }
     buildFeatures {
@@ -52,13 +51,6 @@ dependencies {
     implementation(libs.navigation.fragment.ktx)
     implementation(libs.navigation.ui.ktx)
     
-    // Import the Firebase BoM
-    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
-
-    // When using the BoM, you don't specify versions in Firebase library dependencies
-    implementation("com.google.firebase:firebase-crashlytics-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
-
     implementation(libs.zxing.android.embedded)
     implementation(libs.zxing.core)
 
