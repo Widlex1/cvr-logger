@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.rsgd.cvrlogger"
-        minSdk = 24
+        minSdk = 28
         targetSdk = 36
         versionCode = 4
         versionName = "3.0"
@@ -24,7 +24,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -48,8 +47,6 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.google.generativeai)
-    implementation(libs.navigation.fragment.ktx)
-    implementation(libs.navigation.ui.ktx)
     
     implementation(libs.zxing.android.embedded)
     implementation(libs.zxing.core)

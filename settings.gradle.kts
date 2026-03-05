@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Cuteee Diary"
+rootProject.name = "CVR Logger"
 include(":app")
