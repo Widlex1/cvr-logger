@@ -9,7 +9,7 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.rsgd.cuteeediary" />
+                  <option name="appId" value="com.rsgd.cvrlogger" />
                   <option name="mobileSdkAppId" value="1:974746708466:android:1edf2c696e33fc195d636b" />
                   <option name="projectId" value="cuteeediary-98de2654" />
                   <option name="projectNumber" value="974746708466" />
