@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#1A1A1A"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/tv_dialog_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="REGISTER ENTITY"
+        android:textColor="#FF2D7D"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:fontFamily="monospace"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_scan_qr"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="[ SCAN QR ]"
+        android:textColor="#00FFFF"
+        android:fontFamily="monospace"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/tv_dialog_title"/>
+
+    <EditText
+        android:id="@+id/et_person_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@android:drawable/edit_text"
+        android:backgroundTint="#FF2D7D"
+        android:fontFamily="monospace"
+        android:hint="Enter Name..."
+        android:padding="12dp"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#666666"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/tv_dialog_title" />
+
+    <CheckBox
+        android:id="@+id/cb_master_user"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="SET AS MASTER ENTITY"
+        android:textColor="#FFFFFF"
+        android:buttonTint="#FF2D7D"
+        android:fontFamily="monospace"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/et_person_name" />
+
+    <TextView
+        android:id="@+id/tv_label_color"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="SELECT SIGNATURE COLOR:"
+        android:textColor="#666666"
+        android:textSize="12sp"
+        android:fontFamily="monospace"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cb_master_user" />
+
+    <HorizontalScrollView
+        android:id="@+id/scroll_colors"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/tv_label_color">
+
+        <LinearLayout
+            android:id="@+id/layout_color_options"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="8dp" />
+    </HorizontalScrollView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_cancel"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="ABORT"
+        android:textColor="#666666"
+        android:fontFamily="monospace"
+        app:layout_constraintEnd_toStartOf="@id/btn_confirm"
+        app:layout_constraintTop_toBottomOf="@id/scroll_colors" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_confirm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:backgroundTint="#1A1A1A"
+        android:text="CONFIRM"
+        android:textColor="#FF2D7D"
+        android:fontFamily="monospace"
+        app:cornerRadius="4dp"
+        app:strokeColor="#FF2D7D"
+        app:strokeWidth="1dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scroll_colors" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

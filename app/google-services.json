@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "974746708466",
+    "project_id": "cuteeediary-98de2654",
+    "storage_bucket": "cuteeediary-98de2654.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:974746708466:android:1edf2c696e33fc195d636b",
+        "android_client_info": {
+          "package_name": "com.rsgd.cuteeediary"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXld29P2ukfN84wE0McDh-bCZ2mOls9is"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

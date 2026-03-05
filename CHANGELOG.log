@@ -1,0 +1,40 @@
+// CUTEee DIARY // SYSTEM_CHANGELOG
+
+[ VERSION 2.0 - THE EXPANSION PROTOCOL (PLANNED) ]
+--------------------------------------------------
+- Feature: Integrated Formatting Tools (Bold, Italic, Code-block).
+- Feature: Story Mode. Branching narrative paths for logs.
+- Feature: Data Portability. Export logs as .TXT for external systems.
+- Feature: Quick-Start Widget. Launch new terminal from Home Screen.
+- Feature: Snapshot Protocol. Floating button for full-terminal screenshots.
+- UI: Re-engineered Settings Interface with improved iconography.
+- UI: Kinetic Particle System. Glowing effects triggered by keyword detection.
+- Stability: Performance optimization for heavy log processing.
+- Compatibility: High-definition layout for Tablet and PC environments.
+
+[ VERSION 1.5 - THE INTELLIGENCE UPDATE ]
+-----------------------------------------
+- Feature: Global Theme Protocol. Pick your signature color (Pink, Cyan, Green, etc.).
+- Feature: Custom Default Entity. Personalize your system starting name.
+- Feature: AI Personality Protocol. Customize how Gemma responds in Settings.
+- Feature: Physical AI Trigger. Dedicated "WAKE GEMMA" console button.
+- Feature: Enhanced AI Context. Gemma now follows conversation flow via @gemma tags.
+- UI: Sharp Shape Separators. Modernized rows in log terminal and reader.
+- UI: Right-to-Left Session Transitions for faster navigation.
+- UI: Full-system color sync (Loading, Reader, Editor, and Settings).
+- Performance: Ultra-high speed terminal boot sequence.
+- Stability: Double-back-to-exit protocol on main console.
+- Fix: Resolved context-gathering crash and API connectivity errors.
+
+[ VERSION 1.0 - INITIAL_BOOT ]
+------------------------------
+- Official Launch: "The Cyber-Core".
+- Feature: Animated Terminal Loading Sequence.
+- Feature: AI Integration via @ mentions.
+- Feature: Multi-Entity Registration System.
+- Feature: Master Entity Protocol (★) with delete authority.
+- Feature: Custom Branding & Monospace Font Integration.
+- Feature: .LOG file creation, import, and export.
+- Feature: Sharp "Military-Tech" UI overhaul.
+------------------------------
+EOF // END_OF_LOG

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#121212"
+    android:padding="32dp">
+
+    <View
+        android:id="@+id/glitch_line_top"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="#FF2D7D"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/img_easter_egg"
+        android:layout_width="110dp"
+        android:layout_height="85dp"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/ic_launcher_foreground"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/glitch_line_top" />
+
+    <TextView
+        android:id="@+id/tv_secret_code"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="monospace"
+        android:text="ENCRYPTED_MESSAGE_FOUND"
+        android:textColor="#666666"
+        android:textSize="10sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/img_easter_egg" />
+
+    <TextView
+        android:id="@+id/tv_easter_egg_msg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:fontFamily="monospace"
+        android:gravity="center"
+        android:text="In the memory of CVR."
+        android:textColor="#FF2D7D"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_secret_code" />
+
+    <TextView
+        android:id="@+id/tv_footer_secret"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:fontFamily="monospace"
+        android:text="[ ACCESS GRANTED ]"
+        android:textColor="#00FFFF"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_easter_egg_msg" />
+
+    <View
+        android:id="@+id/glitch_line_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_marginTop="32dp"
+        android:background="#FF2D7D"
+        app:layout_constraintTop_toBottomOf="@id/tv_footer_secret" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_close_secret"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="DISMISS"
+        android:textColor="#FF2D7D"
+        android:fontFamily="monospace"
+        app:backgroundTint="#1A1A1A"
+        app:cornerRadius="4dp"
+        app:strokeColor="#FF2D7D"
+        app:strokeWidth="1dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/glitch_line_bottom" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

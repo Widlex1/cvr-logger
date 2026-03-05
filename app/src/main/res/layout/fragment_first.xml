@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_dark"
+    android:fitsSystemWindows="true"
+    tools:context=".FirstFragment">
+
+    <!-- App Logo Area -->
+    <ImageView
+        android:id="@+id/img_logo"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginTop="60dp"
+        android:src="@drawable/logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="CUTEee DIARY"
+        android:textColor="@color/accent_pink"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.1"
+        android:fontFamily="monospace"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/img_logo" />
+
+    <!-- Side Motion Graphics (Lines) -->
+    <View
+        android:id="@+id/line_left_1"
+        android:layout_width="20dp"
+        android:layout_height="1dp"
+        android:background="@color/accent_pink"
+        android:alpha="0.5"
+        app:layout_constraintBottom_toBottomOf="@id/tv_terminal"
+        app:layout_constraintEnd_toStartOf="@id/tv_terminal"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tv_terminal" />
+
+    <View
+        android:id="@+id/line_right_1"
+        android:layout_width="20dp"
+        android:layout_height="1dp"
+        android:background="@color/accent_pink"
+        android:alpha="0.5"
+        app:layout_constraintBottom_toBottomOf="@id/tv_terminal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@id/tv_terminal"
+        app:layout_constraintTop_toTopOf="@id/tv_terminal" />
+
+    <!-- Terminal Text Area -->
+    <TextView
+        android:id="@+id/tv_terminal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="60dp"
+        android:fontFamily="monospace"
+        android:lineSpacingExtra="6dp"
+        android:text=">>> SYSTEM BOOTING..."
+        android:textColor="@color/accent_pink"
+        android:textSize="10sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_title" />
+
+    <!-- Progress Bar Area -->
+    <ProgressBar
+        android:id="@+id/progress_loading"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="0dp"
+        android:layout_height="8dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginBottom="16dp"
+        android:progress="0"
+        android:progressTint="@color/accent_pink"
+        android:progressBackgroundTint="@color/card_bg"
+        app:layout_constraintBottom_toTopOf="@id/layout_main_actions"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_progress_percent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="0%"
+        android:textColor="@color/accent_pink"
+        android:textSize="10sp"
+        android:fontFamily="monospace"
+        app:layout_constraintEnd_toEndOf="@id/progress_loading"
+        app:layout_constraintStart_toStartOf="@id/progress_loading"
+        app:layout_constraintTop_toBottomOf="@id/progress_loading" />
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:id="@+id/layout_main_actions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginBottom="80dp"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_new_log"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="NEW LOG"
+            android:textColor="@color/accent_pink"
+            android:fontFamily="monospace"
+            android:backgroundTint="#1A1A1A"
+            app:strokeColor="@color/accent_pink"
+            app:strokeWidth="1dp"
+            app:cornerRadius="4dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_join_log"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="JOIN GROUP"
+            android:textColor="@color/accent_cyan"
+            android:fontFamily="monospace"
+            android:backgroundTint="#1A1A1A"
+            app:strokeColor="@color/accent_cyan"
+            app:strokeWidth="1dp"
+            app:cornerRadius="4dp" />
+    </LinearLayout>
+
+    <!-- Technical Info at the bottom -->
+    <TextView
+        android:id="@+id/tv_tech_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:fontFamily="monospace"
+        android:text="UTC: 00:00:00 | LOC: 0.000, 0.000 | STATUS: INITIALIZING"
+        android:textColor="@color/footer_gray"
+        android:textSize="8sp"
+        app:layout_constraintBottom_toTopOf="@id/layout_footer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Footer -->
+    <LinearLayout
+        android:id="@+id/layout_footer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/tv_footer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="© Ready Steady Go - 2025"
+            android:textColor="@color/footer_gray"
+            android:textSize="10sp"
+            android:fontFamily="monospace" />
+
+        <TextView
+            android:id="@+id/tv_version_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="VERSION 2.0 - BETA // BUILD 0003"
+            android:textColor="@color/footer_gray"
+            android:alpha="0.7"
+            android:textSize="8sp"
+            android:fontFamily="monospace" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
