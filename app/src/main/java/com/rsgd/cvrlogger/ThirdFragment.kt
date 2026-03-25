@@ -22,7 +22,6 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -64,6 +63,7 @@ class ThirdFragment : Fragment() {
     private var selectedPersonIndex = 0
     private var editingMessageView: TextView? = null
     private var isStoryMode: Boolean = false
+    private var isDateTimeEnabled: Boolean = true
     private var isLocked: Boolean = false
 
     private val db = FirebaseFirestore.getInstance()
@@ -86,6 +86,7 @@ class ThirdFragment : Fragment() {
 
         val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
         isStoryMode = prefs.getBoolean("story_mode_enabled", false)
+        isDateTimeEnabled = prefs.getBoolean("datetime_enabled", true)
 
         applyTheme()
 
@@ -116,9 +117,17 @@ class ThirdFragment : Fragment() {
 
         setupSenderSwipe()
 
-        binding.btnPlayground.setOnClickListener {
-            if (!isLocked) showFixWiresDialog()
+        binding.btnWakeEltyra.setOnClickListener {
+            if (!isLocked) showWakeEltyraDialog()
             else showLockedToast()
+        }
+
+        binding.btnDatetime.setOnClickListener {
+            if (!isLocked) {
+                isDateTimeEnabled = !isDateTimeEnabled
+                prefs.edit().putBoolean("datetime_enabled", isDateTimeEnabled).apply()
+                applyTheme()
+            } else showLockedToast()
         }
 
         binding.btnAddPerson.setOnClickListener {
@@ -140,7 +149,7 @@ class ThirdFragment : Fragment() {
                 if (binding.etMessageInput.hasSelection()) {
                     showFormattingDialog()
                 } else {
-                    Toast.makeText(requireContext(), "SELECT TEXT TO FORMAT", Toast.LENGTH_SHORT).show()
+                    TerminalToast.show(requireContext(), "SELECT TEXT TO FORMAT")
                 }
             } else showLockedToast()
         }
@@ -162,12 +171,12 @@ class ThirdFragment : Fragment() {
         
         // Easter Egg
         binding.tvMiniAppName.setOnClickListener {
-            Toast.makeText(requireContext(), "SYSTEM_OVERRIDE: [REDACTED]", Toast.LENGTH_SHORT).show()
+            TerminalToast.show(requireContext(), "SYSTEM_OVERRIDE: [REDACTED]")
         }
     }
 
     private fun showLockedToast() {
-        Toast.makeText(requireContext(), "SESSION LOCKED", Toast.LENGTH_SHORT).show()
+        TerminalToast.show(requireContext(), "SESSION LOCKED")
     }
 
     private fun applyFormatToSelection(prefix: String, suffix: String) {
@@ -201,45 +210,15 @@ class ThirdFragment : Fragment() {
         dialog.show()
     }
 
-    private fun showFixWiresDialog() {
-        val wires = mutableListOf("RED", "BLUE", "GREEN", "YELLOW")
-        wires.shuffle()
-        val targetOrder = wires.toList()
-        val currentOrder = wires.toMutableList()
-        currentOrder.shuffle()
-
-        val builder = AlertDialog.Builder(requireContext(), R.style.CyberDialog)
-        builder.setTitle("FIX THE WIRES")
-        
-        val items = currentOrder.toTypedArray()
-        builder.setItems(items) { _, which ->
-            val selected = currentOrder.removeAt(which)
-            currentOrder.add(0, selected)
-            if (currentOrder == targetOrder) {
-                lightUpUI()
-                AlertDialog.Builder(requireContext()).setMessage("CURRENT FLOW RESTORED!").show()
-            } else {
-                showFixWiresDialog()
+    private fun showWakeEltyraDialog() {
+        AlertDialog.Builder(requireContext(), R.style.CyberDialog)
+            .setTitle("WAKE ELTYRA?")
+            .setMessage("Establishing uplink to central node...")
+            .setPositiveButton("UPLINK") { _, _ ->
+                TerminalToast.show(requireContext(), "UPLINK ESTABLISHED")
             }
-        }
-        builder.setNegativeButton("ABORT", null)
-        builder.show()
-    }
-
-    private fun lightUpUI() {
-        val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
-        val accentColor = Color.parseColor(prefs.getString("accent_color", "#FF2D7D"))
-        
-        binding.root.setBackgroundColor(Color.DKGRAY)
-        binding.editorContainer.background = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            setStroke(10, Color.WHITE)
-            cornerRadius = 12f * resources.displayMetrics.density
-        }
-        
-        binding.root.postDelayed({
-            applyTheme()
-        }, 2000)
+            .setNegativeButton("ABORT", null)
+            .show()
     }
 
     private fun startFirestoreSync() {
@@ -287,8 +266,13 @@ class ThirdFragment : Fragment() {
                 val name = parts[1]
                 val isMaster = parts[2].toBoolean()
                 val isAI = parts[3].toBoolean()
-                val isStoryMessage = parts[4].toBoolean()
-                val textContent = parts.last()
+                var isStoryMessage = parts[4].toBoolean()
+                var textContent = if (parts.size >= 6) parts.last() else ""
+                
+                if (textContent.trim().startsWith(">")) {
+                    isStoryMessage = true
+                    textContent = textContent.trim().substring(1).trim()
+                }
                 
                 val p = Person(name, color, isMaster, isAI)
                 val messageInfo = MessageInfo(p, isStoryMessage, textContent)
@@ -301,7 +285,7 @@ class ThirdFragment : Fragment() {
     }
 
     private fun sendMessage() {
-        val message = binding.etMessageInput.text.toString()
+        var message = binding.etMessageInput.text.toString().trim()
         if (message.isNotBlank()) {
             if (people.isEmpty()) {
                 val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
@@ -311,19 +295,42 @@ class ThirdFragment : Fragment() {
             }
             
             val currentPerson = people.getOrNull(selectedPersonIndex) ?: people[0]
+
+            var storyOverride = false
+            if (message.startsWith(">")) {
+                storyOverride = true
+                message = message.substring(1).trim()
+            }
+            val effectiveStory = isStoryMode || storyOverride
             
+            var finalMessage = message
+            // Only add timestamp if it's not already present (to avoid double timestamps on update)
+            if (isDateTimeEnabled && !message.startsWith("[")) {
+                val timeStamp = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+                finalMessage = "[$timeStamp] $message"
+            }
+
             if (editingMessageView != null) {
-                val existingMessageInfo = editingMessageView?.tag as? MessageInfo
-                val updatedMessageInfo = existingMessageInfo?.copy(originalText = message) ?: MessageInfo(currentPerson, isStoryMode, message)
+                // Update with current selection
+                val updatedMessageInfo = MessageInfo(currentPerson, effectiveStory, finalMessage)
 
                 val prefix = if (updatedMessageInfo.person.isMaster) "★ " else ""
                 val displayText = if (updatedMessageInfo.isStory) "> ${updatedMessageInfo.originalText}" else "[$prefix${updatedMessageInfo.person.name.uppercase()}] ${updatedMessageInfo.originalText}"
                 editingMessageView?.text = formatTerminalText(displayText, updatedMessageInfo.person.color)
                 editingMessageView?.tag = updatedMessageInfo
+                
+                if (updatedMessageInfo.isStory) {
+                    editingMessageView?.setTextColor(storyTextColor)
+                    editingMessageView?.setShadowLayer(0f, 0f, 0f, 0)
+                } else {
+                    editingMessageView?.setTextColor(updatedMessageInfo.person.color)
+                    editingMessageView?.setShadowLayer(8f, 0f, 0f, updatedMessageInfo.person.color)
+                }
+
                 editingMessageView = null
                 binding.btnSend.text = "SEND >"
             } else {
-                val newMessageInfo = MessageInfo(currentPerson, isStoryMode, message)
+                val newMessageInfo = MessageInfo(currentPerson, effectiveStory, finalMessage)
                 addMessageToTerminal(newMessageInfo, isInitialLoad = false)
             }
             saveContent()
@@ -391,7 +398,16 @@ class ThirdFragment : Fragment() {
         
         binding.toolbarEditor.background = getNewBorder()
         binding.editorContainer.background = getNewBorder()
-        binding.playgroundArea.background = getNewBorder()
+        binding.layoutWakeEltyra.background = getNewBorder()
+        
+        binding.layoutDatetimeToggle.background = getNewBorder()
+        binding.btnDatetime.setTextColor(if (isDateTimeEnabled) Color.WHITE else accentColor)
+        binding.btnDatetime.background = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            setColor(if (isDateTimeEnabled) accentColor else Color.parseColor("#1A1A1A"))
+            setStroke(2, accentColor)
+            cornerRadius = radius
+        }
         
         binding.senderArea.visibility = View.VISIBLE
         if (isStoryMode) {
@@ -421,7 +437,7 @@ class ThirdFragment : Fragment() {
         }
 
         binding.btnFormatComment.setTextColor(accentColor)
-        binding.btnPlayground.setTextColor(accentColor)
+        binding.btnWakeEltyra.setTextColor(accentColor)
         binding.btnAddPerson.setTextColor(accentColor)
         
         binding.btnSend.background = GradientDrawable().apply {
@@ -459,7 +475,7 @@ class ThirdFragment : Fragment() {
                     binding.tvEditorTitle.text = newName
                     dialog.dismiss()
                 } else {
-                    Toast.makeText(requireContext(), "Rename failed", Toast.LENGTH_SHORT).show()
+                    TerminalToast.show(requireContext(), "Rename failed")
                 }
             } else {
                 dialog.dismiss()
@@ -640,11 +656,41 @@ class ThirdFragment : Fragment() {
             val lines = file.readLines()
             val loadedPeople = mutableListOf<Person>()
             lines.forEach { line ->
-                val parts = line.split("|", limit = 6)
-                if (parts.size >= 5) {
-                    val p = Person(parts[1], parts[0].toInt(), parts[2].toBoolean(), parts[3].toBoolean())
-                    if (!loadedPeople.any { it.name == p.name }) loadedPeople.add(p)
-                    addMessageToTerminal(MessageInfo(p, parts[4].toBoolean(), parts.last()), true)
+                if (line.startsWith("ENTITY|")) {
+                    val parts = line.split("|")
+                    if (parts.size >= 5) {
+                        val p = Person(parts[2], parts[1].toInt(), parts[3].toBoolean(), parts[4].toBoolean())
+                        if (!loadedPeople.any { it.name == p.name }) loadedPeople.add(p)
+                    }
+                } else if (line.startsWith("MSG|")) {
+                    val parts = line.split("|", limit = 7)
+                    if (parts.size >= 7) {
+                        val p = Person(parts[2], parts[1].toInt(), parts[3].toBoolean(), parts[4].toBoolean())
+                        if (!loadedPeople.any { it.name == p.name }) loadedPeople.add(p)
+                        
+                        var isStory = parts[5].toBoolean()
+                        var textContent = parts.last()
+                        if (textContent.trim().startsWith(">")) {
+                            isStory = true
+                            textContent = textContent.trim().substring(1).trim()
+                        }
+                        addMessageToTerminal(MessageInfo(p, isStory, textContent), true)
+                    }
+                } else {
+                    // Backward compatibility
+                    val parts = line.split("|", limit = 6)
+                    if (parts.size >= 5) {
+                        val p = Person(parts[1], parts[0].toInt(), parts[2].toBoolean(), parts[3].toBoolean())
+                        if (!loadedPeople.any { it.name == p.name }) loadedPeople.add(p)
+                        
+                        var isStory = parts[4].toBoolean()
+                        var textContent = if (parts.size >= 6) parts.last() else ""
+                        if (textContent.trim().startsWith(">")) {
+                            isStory = true
+                            textContent = textContent.trim().substring(1).trim()
+                        }
+                        addMessageToTerminal(MessageInfo(p, isStory, textContent), true)
+                    }
                 }
             }
             if (loadedPeople.isNotEmpty()) people = loadedPeople.filter { !it.isAI }.toMutableList()
@@ -659,11 +705,18 @@ class ThirdFragment : Fragment() {
 
     private fun saveContent() {
         val messageLines = mutableListOf<String>()
+        
+        // Save all entities first to ensure they exist even without messages
+        people.forEach { p ->
+            messageLines.add("ENTITY|${p.color}|${p.name}|${p.isMaster}|${p.isAI}")
+        }
+        
+        // Save all messages with MSG prefix
         for (i in 0 until binding.layoutMessages.childCount) {
             val row = (binding.layoutMessages.getChildAt(i) as? LinearLayout)?.getChildAt(0) as? LinearLayout
             val tv = row?.getChildAt(1) as? TextView
             val msgInfo = tv?.tag as? MessageInfo ?: continue
-            messageLines.add("${msgInfo.person.color}|${msgInfo.person.name}|${msgInfo.person.isMaster}|${msgInfo.person.isAI}|${msgInfo.isStory}|${msgInfo.originalText}")
+            messageLines.add("MSG|${msgInfo.person.color}|${msgInfo.person.name}|${msgInfo.person.isMaster}|${msgInfo.person.isAI}|${msgInfo.isStory}|${msgInfo.originalText}")
         }
         
         File(requireContext().filesDir, currentFileName!!).writeText(messageLines.joinToString("\n"))

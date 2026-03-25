@@ -17,7 +17,6 @@ import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
 import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.navigation.fragment.findNavController
@@ -37,17 +36,30 @@ import java.util.Locale
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
+import android.util.Base64
+import android.util.Xml
+import org.xmlpull.v1.XmlPullParser
+import java.io.ByteArrayInputStream
+import android.net.Uri
 
 class SecondFragment : Fragment() {
 
     private var _binding: FragmentSecondBinding? = null
     private val binding get() = _binding!!
     private lateinit var adapter: NotesAdapter
+    private var exportingFileName: String = ""
 
     private val importLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val uri = result.data?.data
             uri?.let { importLog(it) }
+        }
+    }
+
+    private val exportCvrgLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val uri = result.data?.data
+            uri?.let { saveCvrgToUri(it) }
         }
     }
 
@@ -62,6 +74,7 @@ class SecondFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        checkFirstRun()
         applyGlobalTheme()
         setupRecyclerView()
         
@@ -79,12 +92,64 @@ class SecondFragment : Fragment() {
                 type = "*/*"
                 addCategory(Intent.CATEGORY_OPENABLE)
             }
-            importLauncher.launch(Intent.createChooser(intent, "Select Log File"))
+            importLauncher.launch(Intent.createChooser(intent, "Select Log File (.log or .cvrg)"))
         }
 
         binding.btnSettings.setOnClickListener {
-            findNavController().navigate(R.id.action_SecondFragment_to_SettingsFragment)
+            val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
+            val pin = prefs.getString("access_pin", "") ?: ""
+            val biometricEnabled = prefs.getBoolean("biometric_enabled", false)
+            
+            val biometricManager = BiometricManager.from(requireContext())
+            val canBiometric = biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) == BiometricManager.BIOMETRIC_SUCCESS
+
+            // Trigger authentication if a PIN is set OR if biometric is enabled and available
+            if (pin.isNotEmpty() || (biometricEnabled && canBiometric)) {
+                showAuthDialog("AUTHORIZATION REQUIRED FOR SYSTEM ACCESS") {
+                    findNavController().navigate(R.id.action_SecondFragment_to_SettingsFragment)
+                }
+            } else {
+                findNavController().navigate(R.id.action_SecondFragment_to_SettingsFragment)
+            }
         }
+    }
+
+    private fun checkFirstRun() {
+        val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
+        val isFirstRun = prefs.getBoolean("first_run_v4", true)
+        if (isFirstRun) {
+            createWelcomeLog()
+            prefs.edit().putBoolean("first_run_v4", false).apply()
+        }
+    }
+
+    private fun createWelcomeLog() {
+        val welcomeFile = File(requireContext().filesDir, "Welcome_Log.log")
+        
+        // Remove old version if it exists to show updated instructions
+        if (welcomeFile.exists()) welcomeFile.delete()
+
+        val accentColor = Color.parseColor("#FF2D7D")
+        val cyanColor = Color.parseColor("#00FFFF")
+
+        val content = StringBuilder().apply {
+            append("ENTITY|$accentColor|System|true|false\n")
+            append("ENTITY|$cyanColor|Eltyra|false|true\n")
+            append("MSG|$accentColor|System|true|false|false|[09:00] WELCOME TO CVR LOGGER TERMINAL.\n")
+            append("MSG|$cyanColor|Eltyra|false|true|false|[09:01] I am Eltyra, your AI interface. Let me guide you through the protocol.\n")
+            append("MSG|$accentColor|System|true|false|false|[09:02] *ENTITIES*: Personas representing log participants. Create new ones via the + icon in the editor.\n")
+            append("MSG|$cyanColor|Eltyra|false|true|false|[09:03] Swipe or tap the sender area to switch between active entities.\n")
+            append("MSG|$accentColor|System|true|false|false|[09:04] *MASTER ENTITIES*: Marked with a ★. Only they have the clearance to long-press and DELETE log entries.\n")
+            append("MSG|$cyanColor|Eltyra|false|true|false|[09:05] *D&T*: Toggle the [D&T] button to enable or disable automatic timestamps in your session.\n")
+            append("MSG|$accentColor|System|true|false|false|[09:06] *MODIFICATION*: Tap any existing entry to edit its text or reassign it to a different entity.\n")
+            append("MSG|$accentColor|System|true|false|false|[09:07] *STORY MODE*: Toggle for narrative logs, or start a line with `>` for a quick entry.\n")
+            append("MSG|$accentColor|System|true|false|false|[09:08] *FORMATTING*: Select text to apply _italic_, *bold*, ~underline~, or \$sparkle\$ effects.\n")
+            append("MSG|$accentColor|System|true|false|false|[09:09] *SECURITY*: Set a 4-digit PIN in Settings to protect your logs and system configuration.\n")
+            append("MSG|$cyanColor|Eltyra|false|true|false|[09:10] *EXTENSIONS*: Install the 'CVR Export Module' to enable log extraction to external storage.\n")
+            append("MSG|$accentColor|System|true|false|false|[09:11] *CVRG PROTOCOL*: Use the Main screen (Long-press) to export .cvrg (Encrypted) files without any external module.")
+        }.toString()
+
+        welcomeFile.writeText(content)
     }
 
     private fun showLogOptionsDialog(note: Note) {
@@ -102,6 +167,7 @@ class SecondFragment : Fragment() {
         dialogBinding.btnRename.setTextColor(accentColor)
         dialogBinding.btnDelete.setTextColor(accentColor)
         dialogBinding.btnExport.setTextColor(accentColor)
+        dialogBinding.btnSaveCvrg.setTextColor(accentColor)
 
         dialogBinding.btnRename.setOnClickListener {
             dialog.dismiss()
@@ -110,7 +176,7 @@ class SecondFragment : Fragment() {
 
         dialogBinding.btnLock.setOnClickListener {
             if (note.isLocked) {
-                showAuthDialog(note) {
+                showAuthDialog {
                     note.isLocked = false
                     saveLockState(note)
                     adapter.notifyDataSetChanged()
@@ -121,7 +187,7 @@ class SecondFragment : Fragment() {
                 saveLockState(note)
                 adapter.notifyDataSetChanged()
                 dialog.dismiss()
-                Toast.makeText(context, "LOG ENCRYPTED", Toast.LENGTH_SHORT).show()
+                TerminalToast.show(requireContext(), "LOG ENCRYPTED")
             }
         }
 
@@ -145,20 +211,128 @@ class SecondFragment : Fragment() {
             confirmDialog.show()
         }
 
-        dialogBinding.btnExport.setOnClickListener {
-            Toast.makeText(context, "EXPORTING DATA...", Toast.LENGTH_SHORT).show()
+        dialogBinding.btnSaveCvrg.setOnClickListener {
             dialog.dismiss()
+            startCvrgExport(note.fileName)
+        }
+
+        dialogBinding.btnExport.setOnClickListener {
+            dialog.dismiss()
+            handleExport(note.fileName)
         }
 
         dialog.show()
     }
 
-    private fun showAuthDialog(note: Note, onAuthenticated: () -> Unit) {
+    private fun startCvrgExport(fileName: String) {
+        exportingFileName = fileName
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/xml"
+            putExtra(Intent.EXTRA_TITLE, fileName.substringBeforeLast(".") + ".cvrg")
+        }
+        exportCvrgLauncher.launch(intent)
+    }
+
+    private fun saveCvrgToUri(uri: Uri) {
+        try {
+            requireContext().contentResolver.openOutputStream(uri)?.use { outputStream ->
+                val xmlContent = generateXmlContent(exportingFileName)
+                val encryptedData = encryptData(xmlContent)
+                outputStream.write(encryptedData)
+                TerminalToast.show(requireContext(), "CVRG DATA ENCRYPTED & SAVED")
+            }
+        } catch (e: Exception) {
+            TerminalToast.show(requireContext(), "EXPORT FAILED: ${e.message}")
+        }
+    }
+
+    private fun generateXmlContent(fileName: String): String {
+        val file = File(requireContext().filesDir, fileName)
+        val lines = file.readLines()
+        
+        val serializer = Xml.newSerializer()
+        val writer = java.io.StringWriter()
+        serializer.setOutput(writer)
+        serializer.startDocument("UTF-8", true)
+        serializer.startTag(null, "CVRLog")
+        
+        lines.forEach { line ->
+            if (line.startsWith("ENTITY|")) {
+                val parts = line.split("|")
+                if (parts.size >= 5) {
+                    serializer.startTag(null, "Entity")
+                    serializer.attribute(null, "color", parts[1])
+                    serializer.attribute(null, "name", parts[2])
+                    serializer.attribute(null, "isMaster", parts[3])
+                    serializer.attribute(null, "isAI", parts[4])
+                    serializer.endTag(null, "Entity")
+                }
+            } else if (line.startsWith("MSG|")) {
+                val parts = line.split("|", limit = 7)
+                if (parts.size >= 7) {
+                    serializer.startTag(null, "Message")
+                    serializer.attribute(null, "color", parts[1])
+                    serializer.attribute(null, "name", parts[2])
+                    serializer.attribute(null, "isMaster", parts[3])
+                    serializer.attribute(null, "isAI", parts[4])
+                    serializer.attribute(null, "isStory", parts[5])
+                    serializer.attribute(null, "text", parts.last())
+                    serializer.endTag(null, "Message")
+                }
+            }
+        }
+        
+        serializer.endTag(null, "CVRLog")
+        serializer.endDocument()
+        return writer.toString()
+    }
+
+    private fun encryptData(xml: String): ByteArray {
+        val data = xml.toByteArray(Charsets.UTF_8)
+        val key = "CVR_PROTOCOL_ALPHA".toByteArray()
+        val encrypted = ByteArray(data.size)
+        for (i in data.indices) {
+            encrypted[i] = (data[i].toInt() xor key[i % key.size].toInt()).toByte()
+        }
+        return Base64.encode(encrypted, Base64.DEFAULT)
+    }
+
+    private fun handleExport(fileName: String) {
+        if (ExtensionManager.isExportExtensionInstalled(requireContext())) {
+            val logFile = File(requireContext().filesDir, fileName)
+            val logContent = if (logFile.exists()) logFile.readText() else ""
+            val intent = ExtensionManager.getExportIntent(fileName, logContent)
+            try {
+                startActivity(intent)
+            } catch (e: Exception) {
+                TerminalToast.show(requireContext(), "CRITICAL: UPLINK FAILED")
+            }
+        } else {
+            val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
+            val accentColor = Color.parseColor(prefs.getString("accent_color", "#FF2D7D"))
+            
+            val infoBinding = DialogInfoBinding.inflate(layoutInflater)
+            val infoDialog = AlertDialog.Builder(requireContext(), R.style.CyberDialog)
+                .setView(infoBinding.root)
+                .create()
+            
+            infoBinding.tvDialogTitle.text = "MODULE MISSING"
+            infoBinding.tvDialogTitle.setTextColor(accentColor)
+            infoBinding.tvDialogMsg.text = "Extraction Module not detected. Please install the required extension to export logs, or use the Main screen (Long-press) to save as .cvrg."
+            infoBinding.btnOk.setTextColor(accentColor)
+            infoBinding.btnOk.setOnClickListener { infoDialog.dismiss() }
+            infoDialog.show()
+        }
+    }
+
+    private fun showAuthDialog(message: String? = null, onAuthenticated: () -> Unit) {
         val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
-        val biometricEnabled = prefs.getBoolean("biometric_enabled", true)
+        val biometricEnabled = prefs.getBoolean("biometric_enabled", false)
+        val pin = prefs.getString("access_pin", "") ?: ""
         
         val biometricManager = BiometricManager.from(requireContext())
-        val canAuthenticate = biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+        val canAuthenticate = biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG)
         
         if (biometricEnabled && canAuthenticate == BiometricManager.BIOMETRIC_SUCCESS) {
             val executor = ContextCompat.getMainExecutor(requireContext())
@@ -170,32 +344,35 @@ class SecondFragment : Fragment() {
 
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                     super.onAuthenticationError(errorCode, errString)
-                    if (errorCode != BiometricPrompt.ERROR_NEGATIVE_BUTTON && errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
-                        showPinAuthDialog(note, onAuthenticated)
+                    // Fallback to PIN if user cancels biometric or it fails
+                    if (errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON || 
+                        errorCode == BiometricPrompt.ERROR_USER_CANCELED ||
+                        errorCode == BiometricPrompt.ERROR_LOCKOUT || 
+                        errorCode == BiometricPrompt.ERROR_LOCKOUT_PERMANENT) {
+                        showPinAuthDialog(message, onAuthenticated)
                     }
                 }
             })
 
             val promptInfo = BiometricPrompt.PromptInfo.Builder()
                 .setTitle("AUTHENTICATION REQUIRED")
-                .setSubtitle("Use fingerprint or device lock to decrypt")
-                .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+                .setSubtitle(message ?: "Use biometric to proceed")
+                .setNegativeButtonText(if (pin.isNotEmpty()) "USE PIN" else "CANCEL")
                 .build()
 
             biometricPrompt.authenticate(promptInfo)
         } else {
-            showPinAuthDialog(note, onAuthenticated)
+            showPinAuthDialog(message, onAuthenticated)
         }
     }
 
-    private fun showPinAuthDialog(note: Note, onAuthenticated: () -> Unit) {
+    private fun showPinAuthDialog(message: String? = null, onAuthenticated: () -> Unit) {
         val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
         val accentColor = Color.parseColor(prefs.getString("accent_color", "#FF2D7D"))
         val correctPin = prefs.getString("access_pin", "") ?: ""
         val secretWord = prefs.getString("secret_word", "") ?: ""
 
         if (correctPin.isEmpty()) {
-            Toast.makeText(context, "NO PIN SET IN SETTINGS", Toast.LENGTH_SHORT).show()
             onAuthenticated() 
             return
         }
@@ -203,13 +380,22 @@ class SecondFragment : Fragment() {
         val authBinding = DialogAuthBinding.inflate(layoutInflater)
         val authDialog = AlertDialog.Builder(requireContext(), R.style.CyberDialog)
             .setView(authBinding.root)
+            .setCancelable(false)
             .create()
+
+        if (message != null) {
+            authBinding.tvAuthMsg.text = message
+        }
 
         authBinding.tvDialogTitle.setTextColor(accentColor)
         authBinding.etAuthPin.background = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             setStroke(2, accentColor)
             cornerRadius = 12f * resources.displayMetrics.density
+        }
+        authDialog.setOnShowListener {
+            authDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(accentColor)
+            authDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.GRAY)
         }
         authBinding.btnConfirm.setTextColor(accentColor)
         authBinding.btnForgotPin.setTextColor(Color.parseColor("#00FFFF"))
@@ -220,7 +406,7 @@ class SecondFragment : Fragment() {
                 authDialog.dismiss()
                 onAuthenticated()
             } else {
-                Toast.makeText(context, "ACCESS DENIED: INVALID PIN", Toast.LENGTH_SHORT).show()
+                TerminalToast.show(requireContext(), "ACCESS DENIED: INVALID PIN")
             }
         }
 
@@ -266,7 +452,7 @@ class SecondFragment : Fragment() {
                 infoBinding.btnOk.setOnClickListener { infoDialog.dismiss() }
                 infoDialog.show()
             } else {
-                Toast.makeText(context, "VERIFICATION FAILED", Toast.LENGTH_SHORT).show()
+                TerminalToast.show(requireContext(), "VERIFICATION FAILED")
             }
         }
 
@@ -301,7 +487,7 @@ class SecondFragment : Fragment() {
         }
         dialogBinding.btnUpdate.setTextColor(accentColor)
 
-        val nameWithoutExt = note.fileName.removeSuffix(".log")
+        val nameWithoutExt = note.fileName.substringBeforeLast(".")
         dialogBinding.etSessionName.setText(nameWithoutExt)
         dialogBinding.etSessionName.setSelection(nameWithoutExt.length)
 
@@ -313,13 +499,14 @@ class SecondFragment : Fragment() {
             val newName = dialogBinding.etSessionName.text.toString()
             if (newName.isNotBlank() && newName != nameWithoutExt) {
                 val oldFile = File(requireContext().filesDir, note.fileName)
-                val finalNewName = if (newName.endsWith(".log")) newName else "${newName}.log"
+                val ext = note.fileName.substringAfterLast(".", "log")
+                val finalNewName = if (newName.endsWith(".$ext")) newName else "${newName}.$ext"
                 val newFile = File(requireContext().filesDir, finalNewName)
                 if (oldFile.renameTo(newFile)) {
                     loadNotes()
                     dialog.dismiss()
                 } else {
-                    Toast.makeText(requireContext(), "Rename failed", Toast.LENGTH_SHORT).show()
+                    TerminalToast.show(requireContext(), "Rename failed")
                 }
             } else {
                 dialog.dismiss()
@@ -394,22 +581,73 @@ class SecondFragment : Fragment() {
                 }
             }
 
-            if (!fileName.lowercase().endsWith(".log")) {
-                Toast.makeText(requireContext(), "Error: Only .log files are allowed!", Toast.LENGTH_SHORT).show()
+            if (!fileName.lowercase().endsWith(".log") && !fileName.lowercase().endsWith(".cvrg")) {
+                TerminalToast.show(requireContext(), "Error: Only .log or .cvrg files allowed!")
                 return
             }
 
             requireContext().contentResolver.openInputStream(uri)?.use { inputStream ->
-                val destFile = File(requireContext().filesDir, fileName)
-                FileOutputStream(destFile).use { outputStream ->
-                    inputStream.copyTo(outputStream)
+                if (fileName.lowercase().endsWith(".cvrg")) {
+                    val encryptedData = inputStream.readBytes()
+                    val decodedXml = decryptData(encryptedData)
+                    val logContent = convertCvrgToLog(decodedXml)
+                    val internalName = fileName.replace(".cvrg", ".log")
+                    val destFile = File(requireContext().filesDir, internalName)
+                    destFile.writeText(logContent)
+                } else {
+                    val destFile = File(requireContext().filesDir, fileName)
+                    FileOutputStream(destFile).use { outputStream ->
+                        inputStream.copyTo(outputStream)
+                    }
                 }
             }
             loadNotes()
-            Toast.makeText(requireContext(), "Log imported successfully", Toast.LENGTH_SHORT).show()
+            TerminalToast.show(requireContext(), "Log imported successfully")
         } catch (e: Exception) {
-            Toast.makeText(requireContext(), "Import failed: ${e.message}", Toast.LENGTH_SHORT).show()
+            TerminalToast.show(requireContext(), "Import failed: ${e.message}")
         }
+    }
+
+    private fun decryptData(data: ByteArray): String {
+        val encrypted = Base64.decode(data, Base64.DEFAULT)
+        val key = "CVR_PROTOCOL_ALPHA".toByteArray()
+        val decrypted = ByteArray(encrypted.size)
+        for (i in encrypted.indices) {
+            decrypted[i] = (encrypted[i].toInt() xor key[i % key.size].toInt()).toByte()
+        }
+        return String(decrypted, Charsets.UTF_8)
+    }
+
+    private fun convertCvrgToLog(xml: String): String {
+        val logContent = StringBuilder()
+        val parser = Xml.newPullParser()
+        parser.setInput(ByteArrayInputStream(xml.toByteArray(Charsets.UTF_8)), "UTF-8")
+        
+        var eventType = parser.eventType
+        while (eventType != XmlPullParser.END_DOCUMENT) {
+            if (eventType == XmlPullParser.START_TAG) {
+                when (parser.name) {
+                    "Entity" -> {
+                        val color = parser.getAttributeValue(null, "color")
+                        val name = parser.getAttributeValue(null, "name")
+                        val isMaster = parser.getAttributeValue(null, "isMaster")
+                        val isAI = parser.getAttributeValue(null, "isAI")
+                        logContent.append("ENTITY|$color|$name|$isMaster|$isAI\n")
+                    }
+                    "Message" -> {
+                        val color = parser.getAttributeValue(null, "color")
+                        val name = parser.getAttributeValue(null, "name")
+                        val isMaster = parser.getAttributeValue(null, "isMaster")
+                        val isAI = parser.getAttributeValue(null, "isAI")
+                        val isStory = parser.getAttributeValue(null, "isStory")
+                        val text = parser.getAttributeValue(null, "text")
+                        logContent.append("MSG|$color|$name|$isMaster|$isAI|$isStory|$text\n")
+                    }
+                }
+            }
+            eventType = parser.next()
+        }
+        return logContent.toString()
     }
 
     private fun setupRecyclerView() {
@@ -421,7 +659,7 @@ class SecondFragment : Fragment() {
                 }
 
                 if (note.isLocked) {
-                    showAuthDialog(note) { navigate() }
+                    showAuthDialog { navigate() }
                 } else {
                     navigate()
                 }
@@ -437,7 +675,7 @@ class SecondFragment : Fragment() {
 
     private fun loadNotes() {
         val files = requireContext().filesDir.listFiles { file ->
-            file.isFile && file.name.endsWith(".log")
+            file.isFile && (file.name.endsWith(".log") || file.name.endsWith(".cvrg"))
         }?.sortedByDescending { it.lastModified() } ?: emptyList()
 
         val notes = files.map { file ->
@@ -454,7 +692,7 @@ class SecondFragment : Fragment() {
             }
             
             Note(
-                title = file.name.removeSuffix(".log"),
+                title = file.name.substringBeforeLast("."),
                 date = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault()).format(Date(file.lastModified())),
                 snippet = snippet,
                 fileName = file.name,

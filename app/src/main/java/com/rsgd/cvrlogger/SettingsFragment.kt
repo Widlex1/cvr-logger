@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
 import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.rsgd.cvrlogger.databinding.FragmentSettingsBinding
 
@@ -52,7 +51,7 @@ class SettingsFragment : Fragment() {
         val uiScale = prefs.getFloat("ui_scale", 1.0f)
         tempSelectedColor = prefs.getString("accent_color", "#FF2D7D") ?: "#FF2D7D"
         val enterIsSend = prefs.getBoolean("enter_is_send", true)
-        val biometricEnabled = prefs.getBoolean("biometric_enabled", true)
+        val biometricEnabled = prefs.getBoolean("biometric_enabled", false)
         val selectedLangCode = prefs.getString("app_language", "en") ?: "en"
         
         val accessPin = prefs.getString("access_pin", "")
@@ -78,6 +77,19 @@ class SettingsFragment : Fragment() {
 
         applyTheme(tempSelectedColor)
         setupColorPicker()
+        checkExtensionStatus()
+    }
+
+    private fun checkExtensionStatus() {
+        val isInstalled = ExtensionManager.isExportExtensionInstalled(requireContext())
+        if (isInstalled) {
+            binding.tvExtensionStatus.text = "MODULE ACTIVE"
+            binding.tvExtensionStatus.setTextColor(Color.parseColor("#00FFFF")) // Cyan for active
+        } else {
+            binding.tvExtensionStatus.text = "NOT DETECTED"
+            val accentColor = Color.parseColor(tempSelectedColor)
+            binding.tvExtensionStatus.setTextColor(accentColor)
+        }
     }
 
     private fun setupEnterIsSend(editText: android.widget.EditText) {
@@ -114,6 +126,7 @@ class SettingsFragment : Fragment() {
                     tempSelectedColor = colorStr
                     applyTheme(tempSelectedColor)
                     setupColorPicker() 
+                    checkExtensionStatus()
                 }
             }
             binding.layoutAccentOptions.addView(colorView)
@@ -136,6 +149,13 @@ class SettingsFragment : Fragment() {
         binding.secUi.setTextColor(accentColor)
         binding.secEditing.setTextColor(accentColor)
         binding.secSecurity.setTextColor(accentColor)
+        binding.secModules.setTextColor(accentColor)
+
+        binding.layoutExtensionStatus.background = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            setStroke(2, accentColor)
+            cornerRadius = 12f
+        }
 
         binding.etDefaultUser.background = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
@@ -181,6 +201,19 @@ class SettingsFragment : Fragment() {
     }
 
     private fun saveSettings() {
+        val pin = binding.etAccessPin.text.toString()
+        val secretWord = binding.etSecretWord.text.toString()
+
+        if (pin.isNotEmpty() && pin.length != 4) {
+            TerminalToast.show(requireContext(), "PROTOCOL ERROR: PIN MUST BE 4 DIGITS")
+            return
+        }
+
+        if (pin.isNotEmpty() && secretWord.isBlank()) {
+            TerminalToast.show(requireContext(), "PROTOCOL ERROR: RECOVERY WORD REQUIRED")
+            return
+        }
+
         val prefs = requireContext().getSharedPreferences("CVRLoggerPrefs", Context.MODE_PRIVATE)
         val selectedLangCode = languageCodes[binding.spinnerLanguage.selectedItemPosition]
         
@@ -190,12 +223,12 @@ class SettingsFragment : Fragment() {
             .putString("default_user", binding.etDefaultUser.text.toString())
             .putFloat("ui_scale", binding.sliderUiScale.value)
             .putString("accent_color", tempSelectedColor)
-            .putString("access_pin", binding.etAccessPin.text.toString())
-            .putString("secret_word", binding.etSecretWord.text.toString())
+            .putString("access_pin", pin)
+            .putString("secret_word", secretWord)
             .putString("app_language", selectedLangCode)
             .apply()
 
-        Toast.makeText(context, "System Reconfigured", Toast.LENGTH_SHORT).show()
+        TerminalToast.show(requireContext(), "System Reconfigured")
         activity?.recreate() 
     }
 

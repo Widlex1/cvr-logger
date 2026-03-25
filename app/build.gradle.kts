@@ -12,8 +12,8 @@ android {
         applicationId = "com.rsgd.cvrlogger"
         minSdk = 28
         targetSdk = 36
-        versionCode = 4
-        versionName = "3.0"
+        versionCode = 10
+        versionName = "3.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -25,6 +25,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {

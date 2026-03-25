@@ -136,31 +136,51 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:orientation="horizontal"
-            android:layoutDirection="ltr"
+            android:baselineAligned="false"
             app:layout_constraintBottom_toTopOf="@id/input_area">
 
-            <!-- Playground Button -->
+            <!-- Wake Eltyra Section -->
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/playground_area"
-                android:layout_width="wrap_content"
+                android:id="@+id/layout_wake_eltyra"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginRight="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
                 android:background="@drawable/border_pink"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="8dp">
+                android:padding="2dp">
 
                 <TextView
-                    android:id="@+id/btn_playground"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:id="@+id/btn_wake_eltyra"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:fontFamily="monospace"
-                    android:text="@string/btn_playground"
+                    android:gravity="center"
+                    android:text="WAKE\nELTYRA"
                     android:textColor="@color/accent_cyan"
-                    android:textSize="12sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Date/Time Toggle Section -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/layout_datetime_toggle"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginHorizontal="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/border_pink"
+                android:padding="2dp">
+
+                <TextView
+                    android:id="@+id/btn_datetime"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fontFamily="monospace"
+                    android:gravity="center"
+                    android:text="D &amp; T"
+                    android:textColor="@color/accent_pink"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- Sender Selection Box -->
@@ -168,55 +188,63 @@
                 android:id="@+id/sender_area"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="4dp"
-                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:layout_weight="2.5"
                 android:background="@drawable/border_pink"
                 android:padding="8dp">
 
+                <TextView
+                    android:id="@+id/tv_sender_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:text="@string/label_sender"
+                    android:textColor="@color/accent_pink"
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
                 <LinearLayout
                     android:id="@+id/btn_choose_person"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="4dp"
+                    android:background="@drawable/border_pink"
                     android:gravity="center"
                     android:orientation="horizontal"
-                    android:layoutDirection="ltr"
-                    android:padding="8dp"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/btn_add_person"
+                    app:layout_constraintStart_toEndOf="@id/tv_sender_label"
                     app:layout_constraintTop_toTopOf="parent">
-
-                    <TextView
-                        android:id="@+id/tv_sender_label"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="monospace"
-                        android:text="@string/label_sender"
-                        android:textColor="@color/accent_pink"
-                        android:textSize="12sp" />
 
                     <TextView
                         android:id="@+id/tv_sender_name"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:ellipsize="end"
                         android:fontFamily="monospace"
-                        android:text="★ ZohaibSender"
+                        android:singleLine="true"
+                        android:text="★ System"
                         android:textColor="@color/accent_pink"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/btn_add_person"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="8dp"
-                        android:fontFamily="monospace"
-                        android:paddingHorizontal="4dp"
-                        android:text="+"
-                        android:textColor="@color/accent_pink"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
-
+                        android:textSize="12sp" />
                 </LinearLayout>
+
+                <TextView
+                    android:id="@+id/btn_add_person"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:paddingHorizontal="8dp"
+                    android:text="+"
+                    android:textColor="@color/accent_pink"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -247,40 +275,52 @@
                 android:textColor="@color/terminal_white"
                 android:textColorHint="@color/footer_gray"
                 android:textSize="14sp"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/btn_send"
-                android:layout_marginBottom="8dp" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
-                android:id="@+id/btn_send"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="monospace"
-                android:background="@drawable/border_pink"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="8dp"
-                android:text="@string/btn_send"
-                android:textColor="@color/accent_pink"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:layoutDirection="ltr"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/et_message_input" />
-
-            <!-- Formatting Buttons at bottom left of input box (swapped to keep Send on right) -->
             <LinearLayout
-                android:id="@+id/layout_formatting_tools_inner"
-                android:layout_width="wrap_content"
+                android:id="@+id/layout_bottom_controls"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
                 android:orientation="horizontal"
-                android:layoutDirection="ltr"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/et_message_input">
+                android:gravity="center_vertical"
+                app:layout_constraintTop_toBottomOf="@id/et_message_input"
+                app:layout_constraintBottom_toBottomOf="parent">
 
+                <!-- Story Mode Button at corner (left) -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/format_quote_area"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/border_pink"
+                    android:padding="2dp">
+
+                    <TextView
+                        android:id="@+id/btn_format_quote"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="monospace"
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="8dp"
+                        android:text=">"
+                        android:textColor="@color/accent_pink"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <!-- Spacer to push next buttons to the right -->
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <!-- Format Comment Button near Send -->
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/format_comment_area"
                     android:layout_width="wrap_content"
@@ -297,7 +337,6 @@
                         android:paddingHorizontal="16dp"
                         android:paddingVertical="8dp"
                         android:text="//"
-                        android:layoutDirection="ltr"
                         android:textColor="@color/accent_pink"
                         android:textSize="14sp"
                         android:textStyle="bold"
@@ -307,30 +346,18 @@
                         app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/format_quote_area"
+                <TextView
+                    android:id="@+id/btn_send"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
                     android:background="@drawable/border_pink"
-                    android:padding="2dp">
-
-                    <TextView
-                        android:id="@+id/btn_format_quote"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="monospace"
-                        android:paddingHorizontal="16dp"
-                        android:paddingVertical="8dp"
-                        android:text=">"
-                        android:layoutDirection="ltr"
-                        android:textColor="@color/accent_pink"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="8dp"
+                    android:text="@string/btn_send"
+                    android:textColor="@color/accent_pink"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
 
             </LinearLayout>
 

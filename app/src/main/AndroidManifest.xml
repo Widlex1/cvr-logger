@@ -4,13 +4,20 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <queries>
+        <package android:name="com.rsgd.cvrlogger.extension.export" />
+        <intent>
+            <action android:name="com.rsgd.cvrlogger.ACTION_EXPORT" />
+        </intent>
+    </queries>
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@drawable/logo"
+        android:icon="@drawable/cvr_logo"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/logo"
+        android:roundIcon="@drawable/cvr_logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.CVRLogger">
         <activity

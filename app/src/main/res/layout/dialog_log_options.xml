@@ -57,6 +57,17 @@
             android:textSize="16sp" />
 
         <TextView
+            android:id="@+id/btn_save_cvrg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:fontFamily="monospace"
+            android:padding="16dp"
+            android:text="SAVE AS .CVRG"
+            android:textColor="@color/terminal_white"
+            android:textSize="16sp" />
+
+        <TextView
             android:id="@+id/btn_export"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

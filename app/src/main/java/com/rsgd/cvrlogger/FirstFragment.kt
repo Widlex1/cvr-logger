@@ -11,6 +11,11 @@ import android.view.animation.DecelerateInterpolator
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.rsgd.cvrlogger.databinding.FragmentFirstBinding
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
+import kotlin.random.Random
 
 class FirstFragment : Fragment() {
 
@@ -30,17 +35,18 @@ class FirstFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         startBootAnimation()
+        startTechInfoAnimation()
     }
 
     private fun startBootAnimation() {
-        // Terminal text typing effect - Downward Direction (Appending lines)
         val bootSequence = listOf(
-            ">>> INITIALIZING KERNEL...",
-            ">>> LOADING NEURAL MODULES...",
-            ">>> DECRYPTING FILE SYSTEM...",
-            ">>> ESTABLISHING FIRESTORE LINK...",
-            ">>> WAKING GEMMA...",
-            ">>> SYSTEM READY."
+            ">>> INITIALIZING CVR-CORE...",
+            ">>> LOADING APPLICATION MODULES...",
+            ">>> SCANNING LOCAL STORAGE...",
+            ">>> SYNCING DATABASE...",
+            ">>> FETCHING SESSION LOGS...",
+            ">>> DECRYPTING ENTITY DATA...",
+            ">>> UPLINK STABLE. SYSTEM READY."
         )
         
         var seqIndex = 0
@@ -53,33 +59,54 @@ class FirstFragment : Fragment() {
                     fullText.append(bootSequence[seqIndex])
                     binding.tvTerminal.text = fullText.toString()
                     seqIndex++
-                    handler.postDelayed(this, 350)
+                    handler.postDelayed(this, 300)
                 }
             }
         }
         handler.post(sequenceRunnable)
 
-        // Progress bar animation
-        val progressBar = binding.progressLoading
-        val progressAnimator = ObjectAnimator.ofInt(progressBar, "progress", 0, 100).apply {
+        val progressAnimator = ObjectAnimator.ofInt(binding.progressLoading, "progress", 0, 100).apply {
             duration = 2400 
             interpolator = DecelerateInterpolator()
         }
 
-        val percentageText = binding.tvProgressPercent
         progressAnimator.addUpdateListener {
             val progress = it.animatedValue as Int
-            percentageText.text = "$progress%"
+            binding.tvProgressPercent.text = "$progress%"
         }
 
         progressAnimator.start()
 
-        // Automatically navigate to the Second screen (Log List) after boot
         handler.postDelayed({
             if (isAdded) {
                 findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
             }
         }, 3000)
+    }
+
+    private fun startTechInfoAnimation() {
+        val techInfoRunnable = object : Runnable {
+            override fun run() {
+                if (_binding == null) return
+                
+                // Update UTC Time
+                val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+                sdf.timeZone = TimeZone.getTimeZone("UTC")
+                val utcTime = sdf.format(Date())
+                
+                // Randomized Coordinates (Simulating lock-on)
+                val lat = String.format(Locale.US, "%.3f", Random.nextDouble(20.0, 50.0))
+                val lon = String.format(Locale.US, "%.3f", Random.nextDouble(-120.0, 120.0))
+                
+                val status = if (binding.progressLoading.progress < 100) "INITIALIZING" else "STABLE"
+                
+                binding.tvTechInfo.text = "UTC: $utcTime | LOC: $lat, $lon | STATUS: $status"
+                
+                // Fast flicker/update effect
+                handler.postDelayed(this, 100)
+            }
+        }
+        handler.post(techInfoRunnable)
     }
 
     override fun onDestroyView() {
