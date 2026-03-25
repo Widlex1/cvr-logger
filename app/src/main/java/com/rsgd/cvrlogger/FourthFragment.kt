@@ -203,26 +203,7 @@ class FourthFragment : Fragment() {
 
     private fun handleModuleExport(fileName: String) {
         val logFile = File(requireContext().filesDir, fileName)
-        val rawLines = if (logFile.exists()) logFile.readLines() else emptyList()
-        
-        // We process the raw lines to ensure the entity name is specified for each MSG line,
-        // as the module's parser might only be looking at the final text field.
-        val processedLines = rawLines.map { line ->
-            if (line.startsWith("MSG|")) {
-                val parts = line.split("|", limit = 7)
-                if (parts.size >= 7) {
-                    val name = parts[2]
-                    val isMaster = parts[3].toBoolean()
-                    val prefix = if (isMaster) "★ " else ""
-                    val content = parts.last()
-                    // Reconstruct the MSG line but prefix the content with the entity info
-                    return@map line.substringBeforeLast("|") + "|[$prefix${name.uppercase()}] $content"
-                }
-            }
-            line
-        }
-        
-        val logContent = processedLines.joinToString("\n")
+        val logContent = if (logFile.exists()) logFile.readText() else ""
         val intent = ExtensionManager.getExportIntent(fileName, logContent)
         try {
             startActivity(intent)
